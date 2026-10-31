@@ -85,7 +85,7 @@ et le Repository ne sait rien de l'affichage.
 
 | Fichier | Rôle | Cours |
 |---|---|---|
-| [AppSettings.swift](Matbakhi/Core/AppSettings.swift) | Enums `AppTheme` et `AppLanguage`, application du thème et du sens de lecture | ch. 1 |
+| [AppSettings.swift](Matbakhi/Core/AppSettings.swift) | Enums `AppTheme` (thème) et `AppLanguage` (langue, sens de lecture) | ch. 1 |
 | [Localization.swift](Matbakhi/Core/Localization.swift) | `"clé".localized` : traduit un texte dans la langue choisie | — |
 | [LoadState.swift](Matbakhi/Core/LoadState.swift) | Les 5 états possibles d'un écran qui charge des données | ch. 1, 5 |
 
@@ -130,7 +130,6 @@ et le Repository ne sait rien de l'affichage.
 | [StateViews.swift](Matbakhi/Views/Components/StateViews.swift) | Vues « chargement », « erreur » et « vide » |
 | [RemoteImage.swift](Matbakhi/Views/Components/RemoteImage.swift) | Image téléchargée avec apparition en fondu |
 | [MealCard.swift](Matbakhi/Views/Components/MealCard.swift) | Carte d'une recette + animation au toucher |
-| [SkeletonView.swift](Matbakhi/Views/Components/SkeletonView.swift) | Formes grises animées pendant le chargement de l'accueil |
 | [NavigationDestinations.swift](Matbakhi/Views/Components/NavigationDestinations.swift) | Où mène un clic sur une recette ou une catégorie |
 
 ### Le reste
@@ -295,7 +294,7 @@ SplashView {                                    // cette closure est "onFinish"
 tags = text("strTags")?                                 // "Meat, Casserole"
     .split(separator: ",")                              // ["Meat", " Casserole"]
     .map { $0.trimmingCharacters(in: .whitespaces) }    // ["Meat", "Casserole"]
-    .filter { !$0.isEmpty } ?? []                       // on garde les non-vides ; [] si pas de tags
+    ?? []                                               // [] si la recette n'a pas de tags
 ```
 
 `$0` désigne le premier paramètre de la closure, ici chaque élément de la liste.
@@ -315,19 +314,14 @@ Les différentes façons de lancer du code `async` :
 |---|---|---|
 | `Task { ... }` | Depuis du code normal (un bouton) | Bouton « Réessayer » : `Task { await viewModel.load() }` |
 | `.task { ... }` | Quand l'écran apparaît (annulé s'il disparaît) | `HomeView` charge l'accueil |
-| `.task(id: valeur)` | Relancé à chaque changement de la valeur | `SearchView` relance la recherche à chaque lettre |
-| `async let` | Plusieurs appels en parallèle | `HomeViewModel` (ci-dessous) |
+
+Dans `HomeViewModel`, les 3 appels se font l'un après l'autre, chacun avec `await` :
 
 ```swift
-// HomeViewModel : les 3 requêtes partent en même temps
-async let featured = repository.randomMeal()
-async let categories = repository.categories()
-async let tunisian = repository.meals(from: .area("Tunisian"))
-
-let content = try await HomeContent(featured: featured, categories: categories, tunisianMeals: tunisian)
+let featured = try await repository.randomMeal()
+let categories = try await repository.categories()
+let tunisianMeals = try await repository.meals(from: .area("Tunisian"))
 ```
-
-Le temps total est celui de la requête la plus lente, et non la somme des trois.
 
 ### 4.9 Les erreurs : `throw`, `try`, `do` / `catch` (chapitre 5)
 
@@ -339,17 +333,19 @@ do {
     let meals = try await repository.searchMeals(query: text)
     state = meals.isEmpty ? .empty : .loaded(meals)
 } catch is CancellationError {
-    return                                  // recherche annulée (nouvelle lettre tapée) : pas une erreur
-} catch let error as NetworkError {
-    state = .failed(error.messageKey)       // ex. : "error.network.offline"
+    state = .idle       // écran quitté pendant le chargement : on rechargera au retour
 } catch {
-    state = .failed("error.unknown")        // toute autre erreur
+    state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
 }
 ```
 
 - `condition ? a : b` est l'opérateur ternaire : `a` si la condition est vraie, sinon `b`.
+- `(error as? NetworkError)?.messageKey ?? "error.unknown"` signifie : si c'est une `NetworkError`,
+  prendre son message (ex. : `"error.network.offline"`), sinon le message « erreur inattendue ».
 - Les erreurs possibles sont listées dans l'enum `NetworkError` : `invalidURL`, `noConnection`,
-  `server(statusCode:)` et `decoding`.
+  `server` et `decoding`.
+- `CancellationError` n'est pas une vraie erreur : SwiftUI annule le chargement quand on quitte
+  l'écran. On remet l'état à `.idle` pour que le chargement reprenne au retour.
 - Le Repository vérifie aussi le **code de statut HTTP** : 200 = succès, 404 ou 500 = erreur.
 - Le projet n'utilise pas `try?` pour les appels réseau : il ferait disparaître l'erreur, et on ne
   pourrait plus afficher de message (c'était une erreur du cours, chapitre 5).
@@ -412,12 +408,11 @@ Deux points importants :
 
 ## 5. Ce qui se passe au lancement de l'app
 
-1. iOS lance `MatbakhiApp`, la struct marquée `@main`. Son `init()` active le sens de lecture de
-   droite à gauche si la langue choisie est l'arabe.
+1. iOS lance `MatbakhiApp`, la struct marquée `@main`.
 2. `AppDelegate` démarre Firebase (si le fichier `GoogleService-Info.plist` est présent) et le SDK
-   des publicités. Pendant les tests, rien n'est démarré.
-3. `MatbakhiApp` affiche `RootView` en lui donnant la langue (`.environment(\.locale, ...)`)
-   et applique le thème (`ThemeManager.apply`).
+   des publicités.
+3. `MatbakhiApp` affiche `RootView` en lui appliquant le thème (`.preferredColorScheme`), la langue
+   (`.environment(\.locale, ...)`) et le sens de lecture (`.environment(\.layoutDirection, ...)`).
 4. `RootView` commence par `SplashView`, car `showSplash` vaut `true`. Le `.task` du splash lance
    l'animation (le logo tourne et grossit), attend 1,6 seconde puis appelle `onFinish`.
 5. `onFinish` met `showSplash` à `false`. SwiftUI recalcule `RootView` :
@@ -425,8 +420,8 @@ Deux points importants :
    - sinon, il affiche directement `MainTabView`.
 6. Dans la présentation, « Commencer » met `onboardingDone` à `true`. Grâce à `@AppStorage`,
    c'est sauvegardé : aux lancements suivants, la présentation ne revient pas.
-7. `MainTabView` affiche `HomeView`, dont le `.task` appelle `viewModel.load()`. Le squelette gris
-   s'affiche pendant le chargement, puis le contenu apparaît en fondu.
+7. `MainTabView` affiche `HomeView`, dont le `.task` appelle `viewModel.load()`. L'indicateur de
+   chargement s'affiche, puis le contenu.
 
 ---
 
@@ -434,25 +429,22 @@ Deux points importants :
 
 1. **L'utilisateur tape.** `.searchable(text: $viewModel.query)` écrit chaque lettre dans
    `viewModel.query`, grâce au binding `$`.
-2. **SwiftUI réagit.** `.task(id: viewModel.query)` voit que `query` a changé : il **annule** la
-   tâche précédente et appelle `viewModel.search()`.
-3. **Le ViewModel attend un peu** ([SearchViewModel.swift](Matbakhi/ViewModels/SearchViewModel.swift)) :
-   - avec moins de 2 lettres, l'état devient `.idle` et l'écran affiche un message d'aide ;
-   - sinon, il attend 400 ms (`Task.sleep`). Si l'utilisateur tape une autre lettre pendant ce temps,
-     la tâche est annulée et on s'arrête. C'est le **debounce** : on n'appelle l'API qu'une fois que
-     l'utilisateur a fini de taper, au lieu d'une fois par lettre.
+2. **Il appuie sur « Rechercher » au clavier.** `.onSubmit(of: .search)` lance
+   `viewModel.search()` dans une `Task`.
+3. **Le ViewModel vérifie le texte** ([SearchViewModel.swift](Matbakhi/ViewModels/SearchViewModel.swift)) :
+   si le champ est vide, il ne fait rien.
 4. **Le chargement s'affiche.** `state = .loading`. Comme `state` est `@Published`, `SearchView` se
    redessine et affiche `LoadingStateView`.
 5. **Le Repository appelle l'API** ([MealRepository.swift](Matbakhi/Services/MealRepository.swift)) :
    - il construit l'URL `https://www.themealdb.com/api/json/v1/1/search.php?s=pasta` ;
    - il envoie la requête avec `URLSession.shared.data(from:)` ;
-   - il vérifie que le code HTTP est entre 200 et 299 ;
+   - il vérifie que le code HTTP vaut 200 (succès) ;
    - il décode le JSON en `MealsResponse` et renvoie `response.meals ?? []`.
 6. **Le ViewModel met à jour l'état** : `.loaded(meals)`, `.empty` s'il n'y a aucun résultat, ou
    `.failed("error.network.offline")` sans Internet.
 7. **La vue se redessine** et affiche, selon l'état :
-   - la grille de cartes, avec une animation ;
-   - « Aucune recette ne correspond à « pasta » » ;
+   - la grille de cartes ;
+   - « Aucune recette ne correspond à votre recherche » ;
    - le message d'erreur avec un bouton « Réessayer ».
 8. **L'utilisateur touche une carte.** `NavigationLink(value: meal)` demande au `NavigationStack`
    d'afficher la destination prévue pour un `Meal`, définie dans
@@ -470,9 +462,8 @@ Deux points importants :
 
 1. Dans `SettingsView`, le menu est relié à `@AppStorage("app.theme")`. Le choix est sauvegardé
    sur le téléphone.
-2. `MatbakhiApp` lit la même clé. Son `.onChange(of: theme)` appelle
-   `ThemeManager.apply(theme, animated: true)`.
-3. `ThemeManager` change le style de la fenêtre (`overrideUserInterfaceStyle`) avec un fondu.
+2. `MatbakhiApp` lit la même clé et applique `.preferredColorScheme(theme.colorScheme)` :
+   `.light`, `.dark`, ou `nil` pour suivre le réglage du téléphone.
 
 ### La langue
 
@@ -509,7 +500,7 @@ func testSearchOfflineShowsErrorMessage() async {
     // Arrange : un faux Repository qui simule l'absence de réseau
     let repository = MockMealRepository()
     repository.error = NetworkError.noConnection
-    let viewModel = makeViewModel(repository: repository)
+    let viewModel = SearchViewModel(repository: repository)
     viewModel.query = "pasta"
 
     // Act : on lance la recherche
@@ -525,10 +516,8 @@ Les 13 tests existants couvrent le succès, l'état vide **et** l'échec :
 | Fichier | Ce qui est testé |
 |---|---|
 | [MealDecodingTests.swift](MatbakhiTests/MealDecodingTests.swift) | Le JSON est bien décodé (champs vides ignorés, recette partielle, `"meals": null`) |
-| [SearchViewModelTests.swift](MatbakhiTests/SearchViewModelTests.swift) | Résultats, aucun résultat, pas de réseau, recherche trop courte |
+| [SearchViewModelTests.swift](MatbakhiTests/SearchViewModelTests.swift) | Résultats, aucun résultat, pas de réseau, recherche vide |
 | [HomeAndDetailViewModelTests.swift](MatbakhiTests/HomeAndDetailViewModelTests.swift) | Accueil (succès, erreur serveur, vide) et détail (complet, partiel, erreur) |
-
-Dans les tests, le ViewModel est créé avec `debounce: .zero` pour ne pas attendre 400 ms.
 
 **Pour lancer les tests** : ⌘U dans Xcode sur un Mac. Ils sont aussi lancés automatiquement par
 GitHub Actions à chaque envoi de code.
@@ -558,8 +547,10 @@ Exemple : l'écran « Favoris ». Suivez toujours le même ordre.
            do {
                let favorites = try await repository.favorites()
                state = favorites.isEmpty ? .empty : .loaded(favorites)
+           } catch is CancellationError {
+               state = .idle
            } catch {
-               state = .failed("error.unknown")
+               state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
            }
        }
    }
@@ -607,10 +598,6 @@ l'écran affiche l'état vide.
 **Pourquoi `async` / `await` ?**
 Pour que l'app ne se fige pas pendant l'attente de la réponse du serveur.
 
-**Pourquoi attendre 400 ms avant de chercher ?**
-Pour ne pas appeler l'API à chaque lettre. On attend que l'utilisateur ait fini de taper : c'est le
-debounce.
-
 **Pourquoi `@MainActor` sur les ViewModels ?**
 Ils modifient des propriétés affichées à l'écran, et l'interface ne doit être modifiée que depuis le
 fil principal.
@@ -639,7 +626,6 @@ rapides et donnent toujours le même résultat.
 | **NavigationStack** | Pile d'écrans : on « pousse » un écran par-dessus, le bouton retour l'enlève |
 | **Mock** | Fausse version d'un composant, utilisée dans les tests |
 | **Injection de dépendances** | Donner à un objet ce dont il a besoin (son Repository) au lieu qu'il le crée lui-même |
-| **Debounce** | Attendre que l'utilisateur ait fini de taper avant d'agir |
 | **RTL** | *Right-to-left* : écriture de droite à gauche, comme l'arabe |
 | **UserDefaults** | Petit espace de stockage du téléphone pour les réglages (utilisé par `@AppStorage`) |
 | **SDK** | Bibliothèque fournie par une entreprise (Firebase, Google Mobile Ads) |

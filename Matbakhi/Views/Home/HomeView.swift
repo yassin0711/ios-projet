@@ -20,7 +20,7 @@ struct HomeView: View {
     private var content: some View {
         switch viewModel.state {
         case .idle, .loading:
-            HomeSkeletonView()
+            LoadingStateView()
         case .failed(let messageKey):
             ErrorStateView(messageKey: messageKey) {
                 Task { await viewModel.load() }
@@ -35,29 +35,29 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {
                     Text("home.greeting".localized)
-                        .font(.title3.weight(.medium))
+                        .font(.title3)
                         .foregroundStyle(.secondary)
 
                     if let featured = home.featured {
                         FeaturedMealCard(meal: featured)
                     }
-                    if !home.categories.isEmpty {
-                        categoriesSection(home.categories)
-                    }
+
+                    categoriesSection(home.categories)
+
                     if !home.tunisianMeals.isEmpty {
                         tunisianSection(home.tunisianMeals)
                     }
                 }
                 .padding()
             }
-            .refreshable { await viewModel.load(isRefresh: true) }
-            .transition(.opacity)
         }
     }
 
     private func categoriesSection(_ categories: [MealCategory]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeader(title: "home.categories".localized)
+            Text("home.categories".localized)
+                .font(.title2.bold())
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(categories) { category in
@@ -74,16 +74,17 @@ struct HomeView: View {
     private func tunisianSection(_ meals: [Meal]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                SectionHeader(title: "home.tunisian".localized)
+                Text("home.tunisian".localized)
+                    .font(.title2.bold())
                 Spacer()
                 NavigationLink("home.seeAll".localized, value: MealListSource.area("Tunisian"))
-                    .font(.subheadline.weight(.semibold))
             }
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 14) {
                     ForEach(meals) { meal in
                         NavigationLink(value: meal) {
-                            MealCard(meal: meal, height: 130)
+                            MealCard(meal: meal)
                                 .frame(width: 160)
                         }
                         .buttonStyle(PressableButtonStyle())
@@ -91,17 +92,6 @@ struct HomeView: View {
                 }
             }
         }
-    }
-}
-
-// MARK: - Sous-vues de l'accueil
-
-private struct SectionHeader: View {
-    let title: String
-
-    var body: some View {
-        Text(title)
-            .font(.title2.bold())
     }
 }
 
@@ -116,33 +106,25 @@ private struct FeaturedMealCard: View {
                     .frame(height: 230)
                     .frame(maxWidth: .infinity)
 
-                LinearGradient(colors: [.clear, .black.opacity(0.75)], startPoint: .center, endPoint: .bottom)
+                LinearGradient(colors: [.clear, .black.opacity(0.7)], startPoint: .center, endPoint: .bottom)
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     Label("home.featured".localized, systemImage: "sparkles")
-                        .font(.caption.weight(.bold))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(.ultraThinMaterial, in: Capsule())
+                        .font(.caption.bold())
                     Text(meal.name)
                         .font(.title2.bold())
                         .multilineTextAlignment(.leading)
-                    if let area = meal.area {
-                        Text(area)
-                            .font(.subheadline)
-                            .opacity(0.9)
-                    }
                 }
                 .foregroundStyle(.white)
                 .padding()
             }
-            .clipShape(RoundedRectangle(cornerRadius: 22))
-            .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
         }
         .buttonStyle(PressableButtonStyle())
     }
 }
 
+/// Vignette d'une catégorie (image + nom)
 private struct CategoryChip: View {
     let category: MealCategory
 
@@ -156,12 +138,11 @@ private struct CategoryChip: View {
             .frame(width: 64, height: 48)
 
             Text(category.name)
-                .font(.caption.weight(.medium))
+                .font(.caption)
                 .foregroundStyle(.primary)
-                .lineLimit(1)
         }
         .frame(width: 92, height: 92)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
     }
 }
 

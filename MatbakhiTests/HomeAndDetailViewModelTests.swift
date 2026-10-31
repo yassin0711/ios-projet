@@ -7,6 +7,7 @@ final class HomeViewModelTests: XCTestCase {
         // Arrange
         let repository = MockMealRepository()
         repository.random = .preview
+        repository.categoryList = [MealCategory(id: "1", name: "Beef", thumbnailURL: nil, summary: "")]
         repository.meals = [.partial(id: "1", name: "Brik")]
         let viewModel = HomeViewModel(repository: repository)
 
@@ -18,12 +19,13 @@ final class HomeViewModelTests: XCTestCase {
             return XCTFail("État attendu : loaded, obtenu : \(viewModel.state)")
         }
         XCTAssertEqual(content.featured, .preview)
+        XCTAssertEqual(content.categories.map(\.name), ["Beef"])
         XCTAssertEqual(content.tunisianMeals.map(\.name), ["Brik"])
     }
 
     func testLoadFailureShowsServerError() async {
         let repository = MockMealRepository()
-        repository.error = NetworkError.server(statusCode: 500)
+        repository.error = NetworkError.server
         let viewModel = HomeViewModel(repository: repository)
 
         await viewModel.load()
@@ -31,7 +33,7 @@ final class HomeViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state, .failed("error.network.server"))
     }
 
-    func testLoadWithNothingShowsEmptyState() async {
+    func testLoadWithoutCategoriesShowsEmptyState() async {
         let viewModel = HomeViewModel(repository: MockMealRepository())
 
         await viewModel.load()
@@ -42,11 +44,10 @@ final class HomeViewModelTests: XCTestCase {
 
 @MainActor
 final class MealDetailViewModelTests: XCTestCase {
-    func testCompleteMealIsShownWithoutNetworkCall() async {
+    func testCompleteMealIsShownWithoutNetworkCall() {
         let repository = MockMealRepository()
-        let viewModel = MealDetailViewModel(meal: .preview, repository: repository)
 
-        await viewModel.loadIfNeeded()
+        let viewModel = MealDetailViewModel(meal: .preview, repository: repository)
 
         XCTAssertEqual(viewModel.state, .loaded(.preview))
         XCTAssertEqual(repository.detailCallCount, 0)
@@ -57,7 +58,7 @@ final class MealDetailViewModelTests: XCTestCase {
         repository.detail = .preview
         let viewModel = MealDetailViewModel(meal: .partial(id: "1", name: "Brik"), repository: repository)
 
-        await viewModel.loadIfNeeded()
+        await viewModel.load()
 
         XCTAssertEqual(viewModel.state, .loaded(.preview))
         XCTAssertEqual(repository.detailCallCount, 1)
@@ -68,7 +69,7 @@ final class MealDetailViewModelTests: XCTestCase {
         repository.error = NetworkError.decoding
         let viewModel = MealDetailViewModel(meal: .partial(id: "1", name: "Brik"), repository: repository)
 
-        await viewModel.loadIfNeeded()
+        await viewModel.load()
 
         XCTAssertEqual(viewModel.state, .failed("error.network.decoding"))
     }

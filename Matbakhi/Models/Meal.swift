@@ -27,31 +27,19 @@ struct Ingredient: Identifiable, Hashable {
 // MARK: - Décodage du JSON de l'API
 
 extension Meal: Decodable {
-    /// L'API renvoie strIngredient1 ... strIngredient20 : on lit ces clés dynamiquement
-    private struct DynamicKey: CodingKey {
-        let stringValue: String
-        var intValue: Int? { nil }
-
-        init(_ stringValue: String) { self.stringValue = stringValue }
-        init?(stringValue: String) { self.stringValue = stringValue }
-        init?(intValue: Int) { return nil }
-    }
-
     init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: DynamicKey.self)
+        // Une recette de l'API est un dictionnaire de textes : { "strMeal": "...", "strIngredient1": "...", ... }
+        // compactMapValues retire les valeurs null
+        let json = try decoder.singleValueContainer().decode([String: String?].self).compactMapValues { $0 }
 
-        // Les champs vides de l'API valent null, "" ou " " : on les transforme tous en nil
+        // Les champs vides valent "" ou " " : on les transforme en nil
         func text(_ key: String) -> String? {
-            guard let raw = try? container.decodeIfPresent(String.self, forKey: DynamicKey(key)) else {
-                return nil
-            }
-            let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-            return trimmed.isEmpty ? nil : trimmed
+            let value = json[key]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return value.isEmpty ? nil : value
         }
 
-        id = try container.decode(String.self, forKey: DynamicKey("idMeal"))
-        name = try container.decode(String.self, forKey: DynamicKey("strMeal"))
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        id = text("idMeal") ?? ""
+        name = text("strMeal") ?? ""
         thumbnailURL = text("strMealThumb").flatMap { URL(string: $0) }
         category = text("strCategory")
         area = text("strArea")
@@ -59,8 +47,9 @@ extension Meal: Decodable {
         youtubeURL = text("strYoutube").flatMap { URL(string: $0) }
         tags = text("strTags")?
             .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty } ?? []
+            .map { $0.trimmingCharacters(in: .whitespaces) } ?? []
+
+        // L'API envoie strIngredient1 ... strIngredient20 : on garde ceux qui sont remplis
         ingredients = (1...20).compactMap { index in
             guard let name = text("strIngredient\(index)") else { return nil }
             return Ingredient(id: index, name: name, measure: text("strMeasure\(index)") ?? "")

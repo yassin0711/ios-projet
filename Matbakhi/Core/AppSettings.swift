@@ -1,8 +1,6 @@
 import SwiftUI
-import UIKit
 
-// MARK: - Thème clair / sombre
-
+/// Thème choisi dans les Réglages
 enum AppTheme: String, CaseIterable, Identifiable {
     case system, light, dark
 
@@ -19,38 +17,17 @@ enum AppTheme: String, CaseIterable, Identifiable {
         }
     }
 
-    var interfaceStyle: UIUserInterfaceStyle {
+    /// nil = suivre le réglage du téléphone
+    var colorScheme: ColorScheme? {
         switch self {
-        case .system: return .unspecified
+        case .system: return nil
         case .light: return .light
         case .dark: return .dark
         }
     }
 }
 
-enum ThemeManager {
-    /// On applique le thème sur la fenêtre UIKit : cela couvre aussi les sheets et les alertes,
-    /// et le retour au thème « Système » fonctionne sans relancer l'app.
-    @MainActor
-    static func apply(_ theme: AppTheme, animated: Bool = false) {
-        let windows = UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-
-        for window in windows {
-            if animated {
-                UIView.transition(with: window, duration: 0.35, options: .transitionCrossDissolve) {
-                    window.overrideUserInterfaceStyle = theme.interfaceStyle
-                }
-            } else {
-                window.overrideUserInterfaceStyle = theme.interfaceStyle
-            }
-        }
-    }
-}
-
-// MARK: - Langue (français, anglais, arabe)
-
+/// Langue choisie dans les Réglages
 enum AppLanguage: String, CaseIterable, Identifiable {
     case french = "fr"
     case english = "en"
@@ -70,8 +47,9 @@ enum AppLanguage: String, CaseIterable, Identifiable {
     }
 
     var locale: Locale { Locale(identifier: rawValue) }
-    var isRightToLeft: Bool { self == .arabic }
-    var layoutDirection: LayoutDirection { isRightToLeft ? .rightToLeft : .leftToRight }
+
+    /// L'arabe se lit de droite à gauche : toute la mise en page est inversée
+    var layoutDirection: LayoutDirection { self == .arabic ? .rightToLeft : .leftToRight }
 
     /// Langue du téléphone si elle est gérée, sinon le français
     static var deviceDefault: AppLanguage {
@@ -79,19 +57,8 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         return AppLanguage(rawValue: String(code)) ?? .french
     }
 
-    /// Langue choisie dans les Réglages (même clé que @AppStorage)
+    /// Langue enregistrée par les Réglages (même clé que @AppStorage)
     static var current: AppLanguage {
-        let stored = UserDefaults.standard.string(forKey: storageKey) ?? ""
-        return AppLanguage(rawValue: stored) ?? deviceDefault
-    }
-}
-
-enum LanguageManager {
-    /// Inverse les composants UIKit (barres de navigation, onglets) pour l'arabe
-    @MainActor
-    static func applyLayoutDirection(_ language: AppLanguage) {
-        UIView.appearance().semanticContentAttribute = language.isRightToLeft
-            ? .forceRightToLeft
-            : .forceLeftToRight
+        AppLanguage(rawValue: UserDefaults.standard.string(forKey: storageKey) ?? "") ?? deviceDefault
     }
 }

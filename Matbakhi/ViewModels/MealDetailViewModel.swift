@@ -4,37 +4,30 @@ import Foundation
 final class MealDetailViewModel: ObservableObject {
     @Published private(set) var state: LoadState<Meal>
 
-    private let meal: Meal
+    let title: String
+    private let mealID: String
     private let repository: MealRepository
 
     init(meal: Meal, repository: MealRepository = TheMealDBRepository()) {
-        self.meal = meal
+        title = meal.name
+        mealID = meal.id
         self.repository = repository
-        // Si la recette est déjà complète (recherche, recette du jour), pas besoin d'appel réseau
-        self.state = meal.isComplete ? .loaded(meal) : .idle
-    }
-
-    var title: String { meal.name }
-
-    func loadIfNeeded() async {
-        guard case .idle = state else { return }
-        await load()
+        // Recette déjà complète (recherche, recette du jour) : rien à charger
+        state = meal.isComplete ? .loaded(meal) : .idle
     }
 
     func load() async {
         state = .loading
         do {
-            if let detail = try await repository.mealDetail(id: meal.id) {
-                state = .loaded(detail)
+            if let meal = try await repository.mealDetail(id: mealID) {
+                state = .loaded(meal)
             } else {
                 state = .empty
             }
         } catch is CancellationError {
             state = .idle
-        } catch let error as NetworkError {
-            state = .failed(error.messageKey)
         } catch {
-            state = .failed("error.unknown")
+            state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
         }
     }
 }

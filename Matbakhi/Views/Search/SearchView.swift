@@ -3,20 +3,17 @@ import SwiftUI
 struct SearchView: View {
     @StateObject private var viewModel = SearchViewModel()
 
-    private let columns = [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)]
+    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
     var body: some View {
         NavigationStack {
             content
                 .navigationTitle("tab.search".localized)
                 .searchable(text: $viewModel.query, prompt: "search.prompt".localized)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
+                .onSubmit(of: .search) {
+                    Task { await viewModel.search() }
+                }
                 .mealNavigationDestinations()
-        }
-        // Relancée à chaque frappe : la recherche précédente est annulée automatiquement
-        .task(id: viewModel.query) {
-            await viewModel.search()
         }
     }
 
@@ -35,7 +32,7 @@ struct SearchView: View {
             EmptyStateView(
                 systemImage: "magnifyingglass",
                 title: "search.empty.title".localized,
-                message: "search.empty.message".localized(with: viewModel.trimmedQuery)
+                message: "search.empty.message".localized
             )
         case .failed(let messageKey):
             ErrorStateView(messageKey: messageKey) {
@@ -43,17 +40,15 @@ struct SearchView: View {
             }
         case .loaded(let meals):
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 18) {
+                LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(meals) { meal in
                         NavigationLink(value: meal) {
                             MealCard(meal: meal)
                         }
                         .buttonStyle(PressableButtonStyle())
-                        .transition(.scale(scale: 0.9).combined(with: .opacity))
                     }
                 }
                 .padding()
-                .animation(.spring(response: 0.4, dampingFraction: 0.8), value: meals)
             }
         }
     }

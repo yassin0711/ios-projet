@@ -28,9 +28,9 @@
 /* Search */
 "search.prompt" = "Search for a recipe…";
 "search.idle.title" = "Find your next recipe";
-"search.idle.message" = "Type at least 2 letters (e.g. pasta, chicken, couscous).";
+"search.idle.message" = "Type a recipe name, then tap Search (e.g. pasta, chicken, couscous).";
 "search.empty.title" = "No results";
-"search.empty.message" = "No recipe matches “%@”.";
+"search.empty.message" = "No recipe matches your search.";
 
 /* States */
 "state.loading" = "Loading…";
@@ -48,7 +48,6 @@
 
 /* Recipe detail */
 "detail.ingredients" = "Ingredients";
-"detail.ingredients.count" = "%d ingredients";
 "detail.instructions" = "Instructions";
 "detail.video" = "Watch the video";
 "detail.sourceNote" = "Recipe source: TheMealDB";

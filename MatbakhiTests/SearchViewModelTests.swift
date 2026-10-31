@@ -3,16 +3,11 @@ import XCTest
 
 @MainActor
 final class SearchViewModelTests: XCTestCase {
-    /// Crée le ViewModel avec un faux Repository et sans délai d'attente
-    private func makeViewModel(repository: MockMealRepository) -> SearchViewModel {
-        SearchViewModel(repository: repository, debounce: .zero)
-    }
-
     func testSearchSuccessShowsResults() async {
         // Arrange
         let repository = MockMealRepository()
         repository.meals = [.preview]
-        let viewModel = makeViewModel(repository: repository)
+        let viewModel = SearchViewModel(repository: repository)
         viewModel.query = "shak"
 
         // Act
@@ -23,7 +18,7 @@ final class SearchViewModelTests: XCTestCase {
     }
 
     func testSearchWithoutResultShowsEmptyState() async {
-        let viewModel = makeViewModel(repository: MockMealRepository())
+        let viewModel = SearchViewModel(repository: MockMealRepository())
         viewModel.query = "zzzz"
 
         await viewModel.search()
@@ -34,7 +29,7 @@ final class SearchViewModelTests: XCTestCase {
     func testSearchOfflineShowsErrorMessage() async {
         let repository = MockMealRepository()
         repository.error = NetworkError.noConnection
-        let viewModel = makeViewModel(repository: repository)
+        let viewModel = SearchViewModel(repository: repository)
         viewModel.query = "pasta"
 
         await viewModel.search()
@@ -42,10 +37,10 @@ final class SearchViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.state, .failed("error.network.offline"))
     }
 
-    func testQueryTooShortDoesNotCallTheAPI() async {
+    func testEmptyQueryDoesNotCallTheAPI() async {
         let repository = MockMealRepository()
-        let viewModel = makeViewModel(repository: repository)
-        viewModel.query = "a"
+        let viewModel = SearchViewModel(repository: repository)
+        viewModel.query = "   "
 
         await viewModel.search()
 

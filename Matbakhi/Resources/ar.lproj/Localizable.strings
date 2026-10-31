@@ -28,9 +28,9 @@
 /* البحث */
 "search.prompt" = "ابحث عن وصفة…";
 "search.idle.title" = "اعثر على وصفتك القادمة";
-"search.idle.message" = "اكتب حرفين على الأقل بالإنجليزية (مثال: pasta، chicken، couscous).";
+"search.idle.message" = "اكتب اسم وصفة بالإنجليزية ثم اضغط على بحث (مثال: pasta، chicken، couscous).";
 "search.empty.title" = "لا توجد نتائج";
-"search.empty.message" = "لا توجد وصفة تطابق «%@».";
+"search.empty.message" = "لا توجد وصفة تطابق بحثك.";
 
 /* الحالات */
 "state.loading" = "جارٍ التحميل…";
@@ -48,7 +48,6 @@
 
 /* تفاصيل الوصفة */
 "detail.ingredients" = "المكونات";
-"detail.ingredients.count" = "عدد المكونات: %d";
 "detail.instructions" = "طريقة التحضير";
 "detail.video" = "شاهد الفيديو";
 "detail.sourceNote" = "الوصفة بالإنجليزية (المصدر: TheMealDB)";

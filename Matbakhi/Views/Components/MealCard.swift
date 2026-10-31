@@ -1,24 +1,23 @@
 import SwiftUI
 
-/// Carte d'une recette (grilles et listes horizontales)
+/// Carte d'une recette : image, nom, pays ou catégorie
 struct MealCard: View {
     let meal: Meal
-    var height: CGFloat = 140
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             RemoteImage(url: meal.thumbnailURL)
-                .frame(height: height)
+                .frame(height: 140)
                 .frame(maxWidth: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
 
             Text(meal.name)
-                .font(.subheadline.weight(.semibold))
+                .font(.subheadline.bold())
                 .foregroundStyle(.primary)
                 .lineLimit(2, reservesSpace: true)
                 .multilineTextAlignment(.leading)
 
-            if let subtitle = [meal.area, meal.category].compactMap({ $0 }).first {
+            if let subtitle = meal.area ?? meal.category {
                 Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -32,7 +31,7 @@ struct PressableButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? 0.95 : 1)
-            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            .animation(.spring(), value: configuration.isPressed)
     }
 }
 

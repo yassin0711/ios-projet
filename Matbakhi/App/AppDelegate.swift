@@ -7,23 +7,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        // Pendant les tests unitaires, on ne démarre pas les SDK (tests rapides et hors ligne)
-        guard !AppDelegate.isRunningTests else { return true }
-
-        configureFirebase()
+        // Firebase a besoin du fichier GoogleService-Info.plist (voir README)
+        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+            FirebaseApp.configure()
+        }
         MobileAds.shared.start(completionHandler: nil)
         return true
-    }
-
-    private func configureFirebase() {
-        guard Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil else {
-            print("⚠️ GoogleService-Info.plist manquant : Firebase n'est pas configuré (voir README).")
-            return
-        }
-        FirebaseApp.configure()
-    }
-
-    static var isRunningTests: Bool {
-        ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
     }
 }

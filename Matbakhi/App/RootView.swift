@@ -20,7 +20,7 @@ struct RootView: View {
                 OnboardingView {
                     withAnimation(.easeInOut(duration: 0.4)) { onboardingDone = true }
                 }
-                .transition(.asymmetric(insertion: .opacity, removal: .move(edge: .leading)))
+                .transition(.opacity)
             } else {
                 MainTabView()
                     // Changer de langue reconstruit l'interface pour retraduire tous les textes

@@ -10,10 +10,10 @@ protocol MealRepository {
     func meals(from source: MealListSource) async throws -> [Meal]
 }
 
-enum NetworkError: Error, Equatable {
+enum NetworkError: Error {
     case invalidURL
     case noConnection
-    case server(statusCode: Int)
+    case server
     case decoding
 
     /// Clé de traduction du message affiché à l'utilisateur
@@ -30,11 +30,6 @@ enum NetworkError: Error, Equatable {
 /// Implémentation réelle : appelle l'API REST TheMealDB (gratuite, sans clé)
 final class TheMealDBRepository: MealRepository {
     private let baseURL = "https://www.themealdb.com/api/json/v1/1/"
-    private let session: URLSession
-
-    init(session: URLSession = .shared) {
-        self.session = session
-    }
 
     func searchMeals(query: String) async throws -> [Meal] {
         let response: MealsResponse = try await get("search.php", query: ["s": query])
@@ -66,30 +61,26 @@ final class TheMealDBRepository: MealRepository {
         return response.meals ?? []
     }
 
-    // MARK: - Requête GET générique
+    // MARK: - Requête GET commune à tous les appels
 
     private func get<T: Decodable>(_ path: String, query: [String: String] = [:]) async throws -> T {
         var components = URLComponents(string: baseURL + path)
-        if !query.isEmpty {
-            components?.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
-        }
+        components?.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
         guard let url = components?.url else { throw NetworkError.invalidURL }
 
         let result: (Data, URLResponse)
         do {
-            result = try await session.data(from: url)
+            result = try await URLSession.shared.data(from: url)
+        } catch let error as URLError where error.code == .cancelled {
+            throw CancellationError()   // écran quitté pendant le chargement : ce n'est pas une erreur
         } catch {
-            // Requête annulée (ex. : l'utilisateur tape une nouvelle recherche) : ce n'est pas une erreur
-            if (error as? URLError)?.code == .cancelled || error is CancellationError {
-                throw CancellationError()
-            }
             throw NetworkError.noConnection
         }
         let (data, response) = result
 
-        // On vérifie le code de statut HTTP (200 = succès, 404/500 = erreur)
-        if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
-            throw NetworkError.server(statusCode: http.statusCode)
+        // Code de statut HTTP : 200 = succès, 404 / 500 = erreur
+        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+            throw NetworkError.server
         }
 
         do {

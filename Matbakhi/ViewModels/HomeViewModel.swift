@@ -17,28 +17,19 @@ final class HomeViewModel: ObservableObject {
         self.repository = repository
     }
 
-    /// - Parameter isRefresh: true pour « tirer pour rafraîchir » : on garde l'écran affiché
-    func load(isRefresh: Bool = false) async {
-        if !isRefresh { state = .loading }
+    func load() async {
+        state = .loading
         do {
-            // Les 3 appels partent en parallèle
-            async let featured = repository.randomMeal()
-            async let categories = repository.categories()
-            async let tunisian = repository.meals(from: .area("Tunisian"))
+            let featured = try await repository.randomMeal()
+            let categories = try await repository.categories()
+            let tunisianMeals = try await repository.meals(from: .area("Tunisian"))
 
-            let content = try await HomeContent(
-                featured: featured,
-                categories: categories,
-                tunisianMeals: tunisian
-            )
-            let isEmpty = content.featured == nil && content.categories.isEmpty && content.tunisianMeals.isEmpty
-            state = isEmpty ? .empty : .loaded(content)
+            let content = HomeContent(featured: featured, categories: categories, tunisianMeals: tunisianMeals)
+            state = categories.isEmpty ? .empty : .loaded(content)
         } catch is CancellationError {
-            return
-        } catch let error as NetworkError {
-            state = .failed(error.messageKey)
+            state = .idle   // écran quitté pendant le chargement : on rechargera au retour
         } catch {
-            state = .failed("error.unknown")
+            state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
         }
     }
 }

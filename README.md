@@ -20,7 +20,7 @@ fichier par fichier, avec les notions du cours.
 | Navigation | `TabView` + `NavigationStack` + sheets | ✅ (à compléter) |
 | Formulaires avec validation | Connexion, inscription, créer une recette, profil | ⏳ |
 | API REST | TheMealDB (gratuite, sans clé) via `MealRepository` | ✅ |
-| Animations | Splash, présentation, cartes (rebond), ingrédients décalés, squelette de chargement, changement de thème | ✅ (d'autres à venir) |
+| Animations | Splash, présentation, cartes (rebond au toucher), ingrédients qui apparaissent un par un, chargement | ✅ (d'autres à venir) |
 | Thème clair / sombre modifiable | Réglages → Apparence | ✅ |
 | Multilingue FR / EN / AR (droite à gauche) | Réglages → Langue | ✅ |
 | Chargement, erreurs, états vides | `LoadState` + `LoadingStateView` / `ErrorStateView` / `EmptyStateView` | ✅ |

@@ -4,10 +4,10 @@ import SwiftUI
 struct MealListView: View {
     @StateObject private var viewModel: MealListViewModel
 
-    private let columns = [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)]
+    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
     init(source: MealListSource) {
-        // @StateObject (et non @ObservedObject) : c'est cette vue qui crée et possède le ViewModel
+        // @StateObject : c'est cette vue qui crée et possède le ViewModel
         _viewModel = StateObject(wrappedValue: MealListViewModel(source: source))
     }
 
@@ -39,7 +39,7 @@ struct MealListView: View {
             }
         case .loaded(let meals):
             ScrollView {
-                LazyVGrid(columns: columns, spacing: 18) {
+                LazyVGrid(columns: columns, spacing: 16) {
                     ForEach(meals) { meal in
                         NavigationLink(value: meal) {
                             MealCard(meal: meal)

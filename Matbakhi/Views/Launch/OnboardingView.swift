@@ -26,7 +26,6 @@ struct OnboardingView: View {
                 Spacer()
                 Button("onboarding.skip".localized, action: onFinish)
                     .opacity(isLastPage ? 0 : 1)
-                    .animation(.easeInOut, value: isLastPage)
             }
             .padding()
 

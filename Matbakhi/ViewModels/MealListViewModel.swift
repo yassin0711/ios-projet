@@ -19,11 +19,9 @@ final class MealListViewModel: ObservableObject {
             let meals = try await repository.meals(from: source)
             state = meals.isEmpty ? .empty : .loaded(meals)
         } catch is CancellationError {
-            return
-        } catch let error as NetworkError {
-            state = .failed(error.messageKey)
+            state = .idle
         } catch {
-            state = .failed("error.unknown")
+            state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
         }
     }
 }

@@ -28,9 +28,9 @@
 /* Recherche */
 "search.prompt" = "Rechercher une recette…";
 "search.idle.title" = "Trouvez votre prochaine recette";
-"search.idle.message" = "Tapez au moins 2 lettres, en anglais (ex. : pasta, chicken, couscous).";
+"search.idle.message" = "Tapez le nom d'une recette en anglais puis appuyez sur Rechercher (ex. : pasta, chicken, couscous).";
 "search.empty.title" = "Aucun résultat";
-"search.empty.message" = "Aucune recette ne correspond à « %@ ».";
+"search.empty.message" = "Aucune recette ne correspond à votre recherche.";
 
 /* États */
 "state.loading" = "Chargement…";
@@ -48,7 +48,6 @@
 
 /* Détail d'une recette */
 "detail.ingredients" = "Ingrédients";
-"detail.ingredients.count" = "%d ingrédients";
 "detail.instructions" = "Préparation";
 "detail.video" = "Voir la vidéo";
 "detail.sourceNote" = "Recette en anglais (source : TheMealDB)";
