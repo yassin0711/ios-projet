@@ -14,13 +14,13 @@ fichier par fichier, avec les notions du cours.
 | Exigence | Implémentation | État |
 |---|---|---|
 | SwiftUI | Toute l'app | ✅ |
-| Firebase Authentication (email/mot de passe + Google) | Connexion, Inscription, Mot de passe oublié | ⏳ |
-| Cloud Firestore | Profil, favoris, planning, courses, communauté | ⏳ |
-| Au moins 9 interfaces | 16 prévues (voir ci-dessous) | 7 faites |
+| Firebase Authentication (email/mot de passe + Google) | `AuthService` : Connexion, Inscription, Mot de passe oublié, bouton Google | ✅ (à tester avec le fichier Firebase) |
+| Cloud Firestore | Profil (`users/{uid}`) et favoris en temps réel (`FavoritesService`) ✅ ; planning, courses, communauté ⏳ | ✅ partiel |
+| Au moins 9 interfaces | 16 prévues (voir ci-dessous) | 11 faites ✅ |
 | Navigation | `TabView` + `NavigationStack` + sheets | ✅ (à compléter) |
-| Formulaires avec validation | Connexion, inscription, créer une recette, profil | ⏳ |
+| Formulaires avec validation | `Validation` + `FormField` : connexion, inscription, mot de passe oublié ✅ ; créer une recette ⏳ | ✅ partiel |
 | API REST | TheMealDB (gratuite, sans clé) via `MealRepository` | ✅ |
-| Animations | Splash, présentation, cartes (rebond au toucher), ingrédients qui apparaissent un par un, chargement | ✅ (d'autres à venir) |
+| Animations | Splash, présentation, cartes (rebond au toucher), ingrédients qui apparaissent un par un, cœur des favoris qui rebondit, chargement | ✅ (d'autres à venir) |
 | Thème clair / sombre modifiable | Réglages → Apparence | ✅ |
 | Multilingue FR / EN / AR (droite à gauche) | Réglages → Langue | ✅ |
 | Chargement, erreurs, états vides | `LoadState` + `LoadingStateView` / `ErrorStateView` / `EmptyStateView` | ✅ |
@@ -34,20 +34,20 @@ fichier par fichier, avec les notions du cours.
 |---|---|---|
 | 1 | Splash animé | ✅ |
 | 2 | Présentation (3 pages) | ✅ |
-| 3 | Connexion (email + Google) | ⏳ |
-| 4 | Inscription | ⏳ |
-| 5 | Mot de passe oublié | ⏳ |
+| 3 | Connexion (email + Google) | ✅ |
+| 4 | Inscription | ✅ |
+| 5 | Mot de passe oublié | ✅ |
 | 6 | Accueil (recette du jour, catégories, saveurs de Tunisie) | ✅ |
 | 7 | Recherche | ✅ |
 | 8 | Liste par catégorie / cuisine | ✅ |
-| 9 | Détail d'une recette | ✅ (boutons favori et planning à ajouter) |
-| 10 | Favoris | ⏳ |
+| 9 | Détail d'une recette (+ bouton favori) | ✅ (bouton planning à ajouter) |
+| 10 | Favoris | ✅ |
 | 11 | Planning de la semaine | ⏳ |
 | 12 | Liste de courses | ⏳ |
 | 13 | Communauté (recettes publiées) | ⏳ |
 | 14 | Créer une recette (formulaire) | ⏳ |
 | 15 | Profil / modifier le profil | ⏳ |
-| 16 | Réglages | ✅ |
+| 16 | Réglages (+ compte et déconnexion) | ✅ |
 
 ## Répartition dans l'équipe
 
@@ -73,13 +73,14 @@ Matbakhi/
 ├── project.yml              Description du projet Xcode (XcodeGen)
 ├── Matbakhi/
 │   ├── App/                 Point d'entrée, aiguillage, onglets
-│   ├── Core/                Thème, langue, traductions, LoadState
+│   ├── Core/                Thème, langue, traductions, LoadState, Validation
 │   ├── Models/              Meal, MealCategory (Codable + CodingKeys)
-│   ├── Services/            MealRepository (API TheMealDB)
+│   ├── Services/            MealRepository (API), AuthService (connexion), FavoritesService (Firestore)
 │   ├── ViewModels/          Un ViewModel par écran
 │   ├── Views/               Écrans et composants réutilisables
 │   └── Resources/           Traductions fr/en/ar, images, icône
-└── MatbakhiTests/           Tests unitaires avec un faux Repository
+├── MatbakhiTests/           Tests unitaires avec un faux Repository
+└── firestore.rules          Règles de sécurité Firestore (à publier dans la console)
 ```
 
 Règles suivies dans le code :
@@ -146,10 +147,15 @@ Ajoutez ensuite les autres membres dans Settings → Collaborators.
 1. Sur https://console.firebase.google.com : créer un projet « Matbakhi ».
 2. Ajouter une app iOS avec l'identifiant de bundle **`com.matbakhi.app`**.
 3. Télécharger `GoogleService-Info.plist` et le placer dans `Matbakhi/Resources/`.
-4. Authentication → Sign-in method : activer **E-mail/Mot de passe** et **Google**.
-5. Firestore Database → créer la base (mode test au début, règles de sécurité à écrire ensuite).
+   Ce fichier est exclu de Git (`.gitignore`) : partagez-le avec l'équipe par un autre moyen.
+4. Ouvrir ce fichier, copier la valeur de **`REVERSED_CLIENT_ID`** et la coller dans `project.yml`
+   à la place de `com.googleusercontent.apps.A-REMPLACER` (nécessaire pour Google Sign-In).
+5. Authentication → Sign-in method : activer **E-mail/Mot de passe** et **Google**.
+6. Firestore Database → créer la base, puis onglet **Règles** : coller le contenu de
+   [firestore.rules](firestore.rules) et **Publier** (chacun ne peut lire que ses propres données).
 
-Sans ce fichier, l'app se lance quand même (partie recettes), mais la connexion ne fonctionne pas.
+Sans ce fichier, l'app se lance directement sur l'accueil, sans écran de connexion (pratique pour
+travailler sur les autres écrans).
 
 ### 3. Sur un Mac (école ou autre)
 
@@ -164,8 +170,8 @@ Pour un iPhone réel : Signing & Capabilities → choisir votre équipe (Apple I
 
 ## Prochaines étapes
 
-1. Authentification : Connexion, Inscription, Mot de passe oublié, Google Sign-In.
-2. Firestore : profil, favoris (bouton cœur animé sur le détail), planning, liste de courses.
+1. ~~Authentification : Connexion, Inscription, Mot de passe oublié, Google Sign-In.~~ ✅
+2. Firestore : ~~profil, favoris~~ ✅, planning, liste de courses.
 3. Communauté : liste des recettes publiées + formulaire « Créer une recette » avec validation.
 4. Publicités : bannière sur l'accueil, interstitielle après quelques recettes consultées.
 5. Bonus : favoris disponibles hors ligne (SwiftData), widget « Recette du jour ».

@@ -15,10 +15,11 @@ fichier par fichier, et relie chaque notion au cours (chapitres 1 à 6).
 5. [Ce qui se passe au lancement de l'app](#5-ce-qui-se-passe-au-lancement-de-lapp)
 6. [Ce qui se passe quand on cherche « pasta »](#6-ce-qui-se-passe-quand-on-cherche--pasta-)
 7. [Changer de thème ou de langue](#7-changer-de-thème-ou-de-langue)
-8. [Les tests](#8-les-tests)
-9. [Ajouter un nouvel écran : la marche à suivre](#9-ajouter-un-nouvel-écran--la-marche-à-suivre)
-10. [Questions possibles à l'oral](#10-questions-possibles-à-loral)
-11. [Glossaire](#11-glossaire)
+8. [La connexion et les favoris (Firebase)](#8-la-connexion-et-les-favoris-firebase)
+9. [Les tests](#9-les-tests)
+10. [Ajouter un nouvel écran : la marche à suivre](#10-ajouter-un-nouvel-écran--la-marche-à-suivre)
+11. [Questions possibles à l'oral](#11-questions-possibles-à-loral)
+12. [Glossaire](#12-glossaire)
 
 ---
 
@@ -31,15 +32,21 @@ l'utilisateur peut :
 - consulter l'accueil : recette du jour, catégories, recettes tunisiennes ;
 - chercher une recette par son nom ;
 - ouvrir une catégorie, puis une recette, pour voir les ingrédients et la préparation ;
-- changer le thème (clair / sombre) et la langue (français / anglais / arabe) dans les Réglages.
+- changer le thème (clair / sombre) et la langue (français / anglais / arabe) dans les Réglages ;
+- se connecter (e-mail ou Google), créer un compte, recevoir un lien en cas de mot de passe oublié ;
+- ajouter des recettes en favoris (❤️), enregistrés dans Firestore.
 
-Les écrans qui utilisent Firebase (connexion, favoris, planning…) viendront ensuite.
+Le planning, la liste de courses et la communauté viendront ensuite.
 
 ```
-Splash → Présentation (1re fois) → Onglets
-                                     ├── Accueil ───→ Liste d'une catégorie ───→ Détail
-                                     ├── Recherche ─────────────────────────────→ Détail
-                                     └── Réglages
+Splash → Présentation (1re fois) → Connexion ──→ Inscription / Mot de passe oublié
+                                       │
+                                       ▼ (une fois connecté)
+                                    Onglets
+                                     ├── Accueil ───→ Liste d'une catégorie ───→ Détail (❤️)
+                                     ├── Recherche ─────────────────────────────→ Détail (❤️)
+                                     ├── Favoris ───────────────────────────────→ Détail (❤️)
+                                     └── Réglages (compte, déconnexion)
 ```
 
 ---
@@ -88,6 +95,7 @@ et le Repository ne sait rien de l'affichage.
 | [AppSettings.swift](Matbakhi/Core/AppSettings.swift) | Enums `AppTheme` (thème) et `AppLanguage` (langue, sens de lecture) | ch. 1 |
 | [Localization.swift](Matbakhi/Core/Localization.swift) | `"clé".localized` : traduit un texte dans la langue choisie | — |
 | [LoadState.swift](Matbakhi/Core/LoadState.swift) | Les 5 états possibles d'un écran qui charge des données | ch. 1, 5 |
+| [Validation.swift](Matbakhi/Core/Validation.swift) | Règles des formulaires (nom, e-mail, mot de passe) | ch. 3 |
 
 ### Models/ : les données
 
@@ -101,6 +109,8 @@ et le Repository ne sait rien de l'affichage.
 | Fichier | Rôle | Cours |
 |---|---|---|
 | [MealRepository.swift](Matbakhi/Services/MealRepository.swift) | Le protocole `MealRepository` et `TheMealDBRepository`, qui appelle l'API | ch. 5 |
+| [AuthService.swift](Matbakhi/Services/AuthService.swift) | Connexion Firebase : e-mail, Google, inscription, mot de passe oublié | ch. 5 |
+| [FavoritesService.swift](Matbakhi/Services/FavoritesService.swift) | Favoris dans Cloud Firestore, mis à jour en temps réel | ch. 5 |
 
 ### ViewModels/ : un par écran
 
@@ -117,11 +127,15 @@ et le Repository ne sait rien de l'affichage.
 |---|---|
 | [Launch/SplashView.swift](Matbakhi/Views/Launch/SplashView.swift) | Animation de lancement |
 | [Launch/OnboardingView.swift](Matbakhi/Views/Launch/OnboardingView.swift) | Présentation en 3 pages |
+| [Auth/LoginView.swift](Matbakhi/Views/Auth/LoginView.swift) | Connexion (e-mail et Google) |
+| [Auth/SignUpView.swift](Matbakhi/Views/Auth/SignUpView.swift) | Inscription |
+| [Auth/ForgotPasswordView.swift](Matbakhi/Views/Auth/ForgotPasswordView.swift) | Mot de passe oublié |
 | [Home/HomeView.swift](Matbakhi/Views/Home/HomeView.swift) | Accueil |
 | [Search/SearchView.swift](Matbakhi/Views/Search/SearchView.swift) | Recherche |
 | [MealList/MealListView.swift](Matbakhi/Views/MealList/MealListView.swift) | Grille de recettes |
-| [Detail/MealDetailView.swift](Matbakhi/Views/Detail/MealDetailView.swift) | Détail d'une recette |
-| [Settings/SettingsView.swift](Matbakhi/Views/Settings/SettingsView.swift) | Réglages |
+| [Detail/MealDetailView.swift](Matbakhi/Views/Detail/MealDetailView.swift) | Détail d'une recette + bouton ❤️ |
+| [Favorites/FavoritesView.swift](Matbakhi/Views/Favorites/FavoritesView.swift) | Mes favoris |
+| [Settings/SettingsView.swift](Matbakhi/Views/Settings/SettingsView.swift) | Réglages : compte, thème, langue |
 
 ### Views/Components/ : morceaux réutilisables
 
@@ -131,6 +145,7 @@ et le Repository ne sait rien de l'affichage.
 | [RemoteImage.swift](Matbakhi/Views/Components/RemoteImage.swift) | Image téléchargée avec apparition en fondu |
 | [MealCard.swift](Matbakhi/Views/Components/MealCard.swift) | Carte d'une recette + animation au toucher |
 | [NavigationDestinations.swift](Matbakhi/Views/Components/NavigationDestinations.swift) | Où mène un clic sur une recette ou une catégorie |
+| [FormField.swift](Matbakhi/Views/Components/FormField.swift) | Champ de formulaire avec son message d'erreur |
 
 ### Le reste
 
@@ -141,6 +156,7 @@ et le Repository ne sait rien de l'affichage.
 | [MatbakhiTests/](MatbakhiTests/) | Tests unitaires (chapitre 6) |
 | [project.yml](project.yml) | Description du projet Xcode (lue par XcodeGen) |
 | [.github/workflows/ios.yml](.github/workflows/ios.yml) | Compilation automatique sur un Mac de GitHub |
+| [firestore.rules](firestore.rules) | Règles de sécurité Firestore, à publier dans la console Firebase |
 
 ---
 
@@ -391,6 +407,7 @@ ingredients = [Ingredient(id: 1, name: "soy sauce", measure: "3/4 cup"),
 | `@State` | Vue | Petite donnée locale à la vue | `@State private var showSplash = true` |
 | `@StateObject` | Vue | La vue **crée** et garde un ViewModel | `@StateObject private var viewModel = HomeViewModel()` |
 | `@ObservedObject` | Vue | La vue **reçoit** un ViewModel créé ailleurs | (pas encore utilisé) |
+| `@EnvironmentObject` | Vue | Objet **partagé** par toute l'app, injecté une seule fois | `AuthService`, `FavoritesService` |
 | `@Published` | ViewModel | La vue se redessine quand la valeur change | `@Published private(set) var state` |
 | `@AppStorage` | Vue | Valeur sauvegardée sur le téléphone, qui survit à la fermeture | Thème, langue, présentation déjà vue |
 | `@SceneStorage` | Vue | Mémorise l'onglet sélectionné | `MainTabView` |
@@ -408,16 +425,18 @@ Deux points importants :
 
 ## 5. Ce qui se passe au lancement de l'app
 
-1. iOS lance `MatbakhiApp`, la struct marquée `@main`.
-2. `AppDelegate` démarre Firebase (si le fichier `GoogleService-Info.plist` est présent) et le SDK
-   des publicités.
-3. `MatbakhiApp` affiche `RootView` en lui appliquant le thème (`.preferredColorScheme`), la langue
+1. iOS lance `MatbakhiApp`, la struct marquée `@main`. Son `init()` configure Firebase, si le
+   fichier `GoogleService-Info.plist` est présent.
+2. `AppDelegate` démarre le SDK des publicités.
+3. `MatbakhiApp` crée `AuthService` et `FavoritesService`, les partage avec `.environmentObject(...)`,
+   et affiche `RootView` en lui appliquant le thème (`.preferredColorScheme`), la langue
    (`.environment(\.locale, ...)`) et le sens de lecture (`.environment(\.layoutDirection, ...)`).
 4. `RootView` commence par `SplashView`, car `showSplash` vaut `true`. Le `.task` du splash lance
    l'animation (le logo tourne et grossit), attend 1,6 seconde puis appelle `onFinish`.
 5. `onFinish` met `showSplash` à `false`. SwiftUI recalcule `RootView` :
    - si la présentation n'a jamais été vue, il affiche `OnboardingView` ;
-   - sinon, il affiche directement `MainTabView`.
+   - sinon, si personne n'est connecté, il affiche `LoginView` ;
+   - sinon, il affiche `MainTabView`.
 6. Dans la présentation, « Commencer » met `onboardingDone` à `true`. Grâce à `@AppStorage`,
    c'est sauvegardé : aux lancements suivants, la présentation ne revient pas.
 7. `MainTabView` affiche `HomeView`, dont le `.task` appelle `viewModel.load()`. L'indicateur de
@@ -486,7 +505,84 @@ Deux points importants :
 
 ---
 
-## 8. Les tests
+## 8. La connexion et les favoris (Firebase)
+
+### Qui fait quoi
+
+| Fichier | Rôle |
+|---|---|
+| `AuthService` | Toutes les opérations de connexion : se connecter, créer un compte, mot de passe oublié, Google, se déconnecter |
+| `FavoritesService` | Lire, ajouter et retirer des favoris dans Firestore |
+| `Validation` | Vérifier les champs des formulaires **avant** d'appeler Firebase |
+| `FormField` | Un champ de saisie avec son message d'erreur en rouge |
+
+Les deux services sont créés **une seule fois**, dans `MatbakhiApp` (`@StateObject`), puis partagés
+avec toutes les vues grâce à `.environmentObject(...)`. Une vue les récupère avec
+`@EnvironmentObject` (chapitre 3) :
+
+```swift
+@EnvironmentObject private var auth: AuthService
+```
+
+### Comment l'app sait si quelqu'un est connecté
+
+```swift
+// AuthService : Firebase appelle ce code à chaque connexion et déconnexion
+listener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+    self?.user = user
+}
+```
+
+Comme `user` est `@Published`, `RootView` se redessine aussitôt :
+
+```swift
+} else if auth.isFirebaseConfigured && auth.user == nil {
+    LoginView()      // personne n'est connecté
+} else {
+    MainTabView()    // l'app
+}
+```
+
+Les écrans de connexion n'ont donc **jamais besoin de naviguer** après une connexion réussie :
+il suffit que Firebase change `user`. Sans le fichier `GoogleService-Info.plist`,
+`isFirebaseConfigured` vaut `false` et l'app s'ouvre directement sur l'accueil.
+
+### Un formulaire, étape par étape (LoginView)
+
+1. Les champs sont des `@State` (`email`, `password`), reliés aux `FormField` par `$email`.
+2. Au toucher de « Se connecter », `showErrors` passe à `true` : chaque champ affiche son erreur
+   éventuelle, calculée par `Validation`. Par exemple, `Validation.email("ali.mail.com")` renvoie
+   `"validation.email"`, la clé du message « Adresse e-mail invalide ».
+3. S'il reste une erreur, `guard` arrête tout : Firebase n'est pas appelé.
+4. Sinon, `isLoading` passe à `true` (indicateur de chargement, boutons désactivés) et on appelle
+   `auth.signIn(...)`.
+5. Si Firebase refuse (mauvais mot de passe, e-mail déjà utilisé…), `AuthService.messageKey(for:)`
+   transforme l'erreur en message clair et traduit.
+
+### La connexion avec Google
+
+1. `GIDSignIn` ouvre la fenêtre de connexion Google.
+2. Google renvoie un jeton (`idToken`) qui prouve l'identité de l'utilisateur.
+3. On donne ce jeton à Firebase (`GoogleAuthProvider.credential`), qui connecte l'utilisateur.
+4. `.onOpenURL`, dans `MatbakhiApp`, gère le retour dans l'app. Il faut pour cela remplacer
+   `REVERSED_CLIENT_ID` dans `project.yml` (voir README).
+
+### Les favoris dans Firestore
+
+```
+users/{uid}                         { name, email }            ← profil, créé à l'inscription
+users/{uid}/favorites/{idRecette}   { name, thumbnail, area }  ← un document par favori
+```
+
+- Toucher ❤️ appelle `FavoritesService.toggle(meal)`, qui crée ou supprime le document.
+- `addSnapshotListener` **écoute** la collection : à chaque changement, même depuis un autre
+  téléphone, `favorites` est mis à jour. L'écran Favoris et le cœur se redessinent tout seuls.
+- **Sécurité** : les règles de [firestore.rules](firestore.rules) n'autorisent chaque utilisateur
+  qu'à lire et écrire sous `users/{son uid}`.
+
+---
+
+## 9. Les tests
 
 **Le principe (chapitre 6)** : on teste les ViewModels **sans Internet**, en leur donnant un faux
 Repository, [MockMealRepository.swift](MatbakhiTests/MockMealRepository.swift). Dans un test, on
@@ -511,20 +607,21 @@ func testSearchOfflineShowsErrorMessage() async {
 }
 ```
 
-Les 13 tests existants couvrent le succès, l'état vide **et** l'échec :
+Les 17 tests existants couvrent le succès, l'état vide **et** l'échec :
 
 | Fichier | Ce qui est testé |
 |---|---|
 | [MealDecodingTests.swift](MatbakhiTests/MealDecodingTests.swift) | Le JSON est bien décodé (champs vides ignorés, recette partielle, `"meals": null`) |
 | [SearchViewModelTests.swift](MatbakhiTests/SearchViewModelTests.swift) | Résultats, aucun résultat, pas de réseau, recherche vide |
 | [HomeAndDetailViewModelTests.swift](MatbakhiTests/HomeAndDetailViewModelTests.swift) | Accueil (succès, erreur serveur, vide) et détail (complet, partiel, erreur) |
+| [ValidationTests.swift](MatbakhiTests/ValidationTests.swift) | Règles des formulaires : e-mail, mot de passe, nom, confirmation |
 
 **Pour lancer les tests** : ⌘U dans Xcode sur un Mac. Ils sont aussi lancés automatiquement par
 GitHub Actions à chaque envoi de code.
 
 ---
 
-## 9. Ajouter un nouvel écran : la marche à suivre
+## 10. Ajouter un nouvel écran : la marche à suivre
 
 Exemple : l'écran « Favoris ». Suivez toujours le même ordre.
 
@@ -567,7 +664,7 @@ Exemple : l'écran « Favoris ». Suivez toujours le même ordre.
 
 ---
 
-## 10. Questions possibles à l'oral
+## 11. Questions possibles à l'oral
 
 **Pourquoi l'architecture MVVM ?**
 Chaque fichier a un seul rôle : la vue affiche, le ViewModel gère la logique, le Repository va
@@ -598,6 +695,23 @@ l'écran affiche l'état vide.
 **Pourquoi `async` / `await` ?**
 Pour que l'app ne se fige pas pendant l'attente de la réponse du serveur.
 
+**Comment fonctionne la connexion ?**
+`AuthService` utilise Firebase Authentication. Un écouteur (`addStateDidChangeListener`) met à jour
+`user`, qui est `@Published`. `RootView` affiche l'écran de connexion tant que `user` vaut `nil`.
+
+**Comment validez-vous les formulaires ?**
+Avant d'appeler Firebase, chaque champ est vérifié par `Validation`, qui renvoie la clé d'un message
+d'erreur traduit. Le message s'affiche en rouge sous le champ, et Firebase n'est appelé que si tout
+est valide. Les erreurs renvoyées par Firebase sont aussi traduites en messages clairs.
+
+**Comment les favoris sont-ils synchronisés ?**
+Chaque favori est un document Firestore dans `users/{uid}/favorites`. `addSnapshotListener` prévient
+l'app à chaque changement, en temps réel.
+
+**Comment protégez-vous les données des utilisateurs ?**
+Avec les règles de sécurité Firestore : un utilisateur connecté ne peut lire et écrire que ses
+propres documents (`request.auth.uid == userId`).
+
 **Pourquoi `@MainActor` sur les ViewModels ?**
 Ils modifient des propriétés affichées à l'écran, et l'interface ne doit être modifiée que depuis le
 fil principal.
@@ -613,7 +727,7 @@ rapides et donnent toujours le même résultat.
 
 ---
 
-## 11. Glossaire
+## 12. Glossaire
 
 | Terme | Signification |
 |---|---|
@@ -629,6 +743,9 @@ rapides et donnent toujours le même résultat.
 | **RTL** | *Right-to-left* : écriture de droite à gauche, comme l'arabe |
 | **UserDefaults** | Petit espace de stockage du téléphone pour les réglages (utilisé par `@AppStorage`) |
 | **SDK** | Bibliothèque fournie par une entreprise (Firebase, Google Mobile Ads) |
+| **Firebase Authentication** | Service de Google qui gère les comptes (inscription, connexion) |
+| **Cloud Firestore** | Base de données de Firebase, organisée en collections et documents |
+| **Listener (écouteur)** | Code appelé automatiquement à chaque changement (connexion, données Firestore) |
 | **SPM** | *Swift Package Manager* : télécharge et intègre les SDK dans le projet |
 | **XcodeGen** | Outil qui génère le projet Xcode à partir de `project.yml` |
 | **GitHub Actions / CI** | Compilation et tests automatiques sur un Mac de GitHub à chaque envoi de code |

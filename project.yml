@@ -46,6 +46,9 @@ targets:
         GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
         SKAdNetworkItems:
           - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
+        # Retour dans l'app après la connexion Google (voir REVERSED_CLIENT_ID plus bas)
+        CFBundleURLTypes:
+          - CFBundleURLSchemes: ["$(REVERSED_CLIENT_ID)"]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.matbakhi.app
@@ -54,6 +57,8 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         OTHER_LDFLAGS: $(inherited) -ObjC
         CODE_SIGN_STYLE: Automatic
+        # Google Sign-In : remplacer par la valeur REVERSED_CLIENT_ID du fichier GoogleService-Info.plist
+        REVERSED_CLIENT_ID: com.googleusercontent.apps.A-REMPLACER
     dependencies:
       - package: Firebase
         product: FirebaseAuth

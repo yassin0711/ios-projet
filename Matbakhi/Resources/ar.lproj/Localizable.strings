@@ -63,3 +63,41 @@
 "theme.system" = "النظام";
 "theme.light" = "فاتح";
 "theme.dark" = "داكن";
+
+/* المفضلة والحساب */
+"tab.favorites" = "المفضلة";
+"settings.account" = "الحساب";
+
+/* تسجيل الدخول */
+"auth.login.title" = "تسجيل الدخول";
+"auth.login.button" = "دخول";
+"auth.google" = "المتابعة باستخدام Google";
+"auth.forgot.link" = "نسيت كلمة المرور؟";
+"auth.signup.link" = "ليس لديك حساب؟ أنشئ حسابًا";
+"auth.email" = "البريد الإلكتروني";
+"auth.password" = "كلمة المرور";
+"auth.name" = "الاسم الكامل";
+"auth.confirm" = "تأكيد كلمة المرور";
+"auth.signup.title" = "إنشاء حساب";
+"auth.signup.button" = "إنشاء حسابي";
+"auth.forgot.title" = "نسيت كلمة المرور";
+"auth.forgot.message" = "أدخل بريدك الإلكتروني وسنرسل لك رابطًا لاختيار كلمة مرور جديدة.";
+"auth.forgot.button" = "إرسال الرابط";
+"auth.forgot.sent" = "تم إرسال البريد! تحقّق من صندوق الوارد.";
+"auth.logout" = "تسجيل الخروج";
+
+/* التحقق من النماذج */
+"validation.name" = "يجب أن يحتوي الاسم على حرفين على الأقل.";
+"validation.email" = "بريد إلكتروني غير صالح (مثال: name@mail.com).";
+"validation.password" = "يجب أن تحتوي كلمة المرور على 6 أحرف على الأقل.";
+"validation.confirm" = "كلمتا المرور غير متطابقتين.";
+
+/* أخطاء تسجيل الدخول */
+"auth.error.invalidEmail" = "عنوان البريد الإلكتروني غير صالح.";
+"auth.error.emailInUse" = "يوجد حساب مسجّل بهذا البريد الإلكتروني.";
+"auth.error.weakPassword" = "كلمة المرور ضعيفة: استخدم 6 أحرف على الأقل.";
+"auth.error.wrongCredentials" = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+
+/* المفضلة */
+"favorites.empty.title" = "لا توجد مفضلات";
+"favorites.empty.message" = "اضغط على القلب في وصفة لتجدها هنا.";

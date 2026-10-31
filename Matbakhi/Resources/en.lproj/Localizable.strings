@@ -63,3 +63,41 @@
 "theme.system" = "System";
 "theme.light" = "Light";
 "theme.dark" = "Dark";
+
+/* Tab and account settings */
+"tab.favorites" = "Favorites";
+"settings.account" = "Account";
+
+/* Sign in */
+"auth.login.title" = "Sign in";
+"auth.login.button" = "Sign in";
+"auth.google" = "Continue with Google";
+"auth.forgot.link" = "Forgot password?";
+"auth.signup.link" = "No account? Sign up";
+"auth.email" = "Email";
+"auth.password" = "Password";
+"auth.name" = "Full name";
+"auth.confirm" = "Confirm password";
+"auth.signup.title" = "Sign up";
+"auth.signup.button" = "Create my account";
+"auth.forgot.title" = "Forgot password";
+"auth.forgot.message" = "Enter your email: we will send you a link to choose a new password.";
+"auth.forgot.button" = "Send the link";
+"auth.forgot.sent" = "Email sent! Check your inbox.";
+"auth.logout" = "Sign out";
+
+/* Form validation */
+"validation.name" = "Name must be at least 2 characters.";
+"validation.email" = "Invalid email address (e.g. name@mail.com).";
+"validation.password" = "Password must be at least 6 characters.";
+"validation.confirm" = "Passwords do not match.";
+
+/* Sign-in errors */
+"auth.error.invalidEmail" = "This email address is not valid.";
+"auth.error.emailInUse" = "An account already exists with this email.";
+"auth.error.weakPassword" = "Password too weak: use at least 6 characters.";
+"auth.error.wrongCredentials" = "Incorrect email or password.";
+
+/* Favorites */
+"favorites.empty.title" = "No favorites yet";
+"favorites.empty.message" = "Tap the heart on a recipe to find it here.";

@@ -63,3 +63,41 @@
 "theme.system" = "Système";
 "theme.light" = "Clair";
 "theme.dark" = "Sombre";
+
+/* Onglet et réglages du compte */
+"tab.favorites" = "Favoris";
+"settings.account" = "Compte";
+
+/* Connexion */
+"auth.login.title" = "Connexion";
+"auth.login.button" = "Se connecter";
+"auth.google" = "Continuer avec Google";
+"auth.forgot.link" = "Mot de passe oublié ?";
+"auth.signup.link" = "Pas de compte ? Inscrivez-vous";
+"auth.email" = "E-mail";
+"auth.password" = "Mot de passe";
+"auth.name" = "Nom complet";
+"auth.confirm" = "Confirmer le mot de passe";
+"auth.signup.title" = "Inscription";
+"auth.signup.button" = "Créer mon compte";
+"auth.forgot.title" = "Mot de passe oublié";
+"auth.forgot.message" = "Entrez votre e-mail : nous vous enverrons un lien pour choisir un nouveau mot de passe.";
+"auth.forgot.button" = "Envoyer le lien";
+"auth.forgot.sent" = "E-mail envoyé ! Vérifiez votre boîte de réception.";
+"auth.logout" = "Se déconnecter";
+
+/* Validation des formulaires */
+"validation.name" = "Le nom doit contenir au moins 2 caractères.";
+"validation.email" = "Adresse e-mail invalide (exemple : nom@mail.com).";
+"validation.password" = "Le mot de passe doit contenir au moins 6 caractères.";
+"validation.confirm" = "Les mots de passe ne correspondent pas.";
+
+/* Erreurs de connexion */
+"auth.error.invalidEmail" = "Cette adresse e-mail n'est pas valide.";
+"auth.error.emailInUse" = "Un compte existe déjà avec cet e-mail.";
+"auth.error.weakPassword" = "Mot de passe trop faible : utilisez au moins 6 caractères.";
+"auth.error.wrongCredentials" = "E-mail ou mot de passe incorrect.";
+
+/* Favoris */
+"favorites.empty.title" = "Aucun favori";
+"favorites.empty.message" = "Touchez le cœur sur une recette pour la retrouver ici.";

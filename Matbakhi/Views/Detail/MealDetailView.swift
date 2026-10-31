@@ -1,10 +1,14 @@
 import SwiftUI
 
 struct MealDetailView: View {
+    @EnvironmentObject private var favorites: FavoritesService
     @StateObject private var viewModel: MealDetailViewModel
     @State private var showIngredients = false
 
+    private let meal: Meal
+
     init(meal: Meal) {
+        self.meal = meal
         _viewModel = StateObject(wrappedValue: MealDetailViewModel(meal: meal))
     }
 
@@ -12,6 +16,16 @@ struct MealDetailView: View {
         content
             .navigationTitle(viewModel.title)
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                // Bouton favori : le cœur rebondit quand on le touche
+                Button {
+                    favorites.toggle(meal)
+                } label: {
+                    Image(systemName: favorites.isFavorite(meal) ? "heart.fill" : "heart")
+                        .foregroundStyle(.red)
+                        .symbolEffect(.bounce, value: favorites.isFavorite(meal))
+                }
+            }
             .task {
                 if case .idle = viewModel.state {
                     await viewModel.load()
@@ -124,5 +138,6 @@ private struct TagView: View {
 #Preview {
     NavigationStack {
         MealDetailView(meal: .preview)
+            .environmentObject(FavoritesService())
     }
 }

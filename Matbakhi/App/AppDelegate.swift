@@ -1,5 +1,4 @@
 import UIKit
-import FirebaseCore
 import GoogleMobileAds
 
 final class AppDelegate: NSObject, UIApplicationDelegate {
@@ -7,10 +6,7 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        // Firebase a besoin du fichier GoogleService-Info.plist (voir README)
-        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
-            FirebaseApp.configure()
-        }
+        // Démarre le SDK des publicités Google (identifiants de test, voir project.yml)
         MobileAds.shared.start(completionHandler: nil)
         return true
     }

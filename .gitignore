@@ -12,3 +12,7 @@ xcuserdata/
 # Divers
 .DS_Store
 screenshots/
+
+# Configuration Firebase : jamais envoyée sur GitHub tant que le dépôt est public
+# (la partager entre membres de l'équipe par un autre moyen)
+GoogleService-Info.plist
