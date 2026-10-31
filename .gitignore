@@ -1,0 +1,14 @@
+# Projet généré par XcodeGen (voir project.yml)
+*.xcodeproj
+Matbakhi/Info.plist
+
+# Xcode
+build/
+DerivedData/
+SourcePackages/
+xcuserdata/
+*.xcuserstate
+
+# Divers
+.DS_Store
+screenshots/

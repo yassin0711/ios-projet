@@ -1,0 +1,66 @@
+/* التطبيق */
+"app.name" = "مطبخي";
+"app.tagline" = "اطبخ، خطّط، شارك";
+
+/* التبويبات */
+"tab.home" = "الرئيسية";
+"tab.search" = "بحث";
+"tab.settings" = "الإعدادات";
+
+/* التعريف بالتطبيق */
+"onboarding.1.title" = "آلاف الوصفات";
+"onboarding.1.text" = "اكتشف مطابخ العالم ونكهات تونس.";
+"onboarding.2.title" = "خطّط وجباتك";
+"onboarding.2.text" = "نظّم أسبوعك وأنشئ قائمة مشترياتك.";
+"onboarding.3.title" = "شارك إبداعاتك";
+"onboarding.3.text" = "انشر وصفاتك الخاصة ليستفيد منها الجميع.";
+"onboarding.next" = "التالي";
+"onboarding.start" = "ابدأ";
+"onboarding.skip" = "تخطٍّ";
+
+/* الرئيسية */
+"home.greeting" = "ماذا سنطبخ اليوم؟";
+"home.featured" = "وصفة اليوم";
+"home.categories" = "الأصناف";
+"home.tunisian" = "نكهات تونسية";
+"home.seeAll" = "عرض الكل";
+
+/* البحث */
+"search.prompt" = "ابحث عن وصفة…";
+"search.idle.title" = "اعثر على وصفتك القادمة";
+"search.idle.message" = "اكتب حرفين على الأقل بالإنجليزية (مثال: pasta، chicken، couscous).";
+"search.empty.title" = "لا توجد نتائج";
+"search.empty.message" = "لا توجد وصفة تطابق «%@».";
+
+/* الحالات */
+"state.loading" = "جارٍ التحميل…";
+"state.retry" = "إعادة المحاولة";
+"state.error.title" = "عذرًا!";
+"state.empty.title" = "لا يوجد ما يُعرض";
+"state.empty.message" = "لا توجد وصفات هنا حاليًا.";
+
+/* الأخطاء */
+"error.network.invalidURL" = "عنوان غير صالح.";
+"error.network.offline" = "لا يوجد اتصال بالإنترنت. تحقّق من الشبكة ثم أعد المحاولة.";
+"error.network.server" = "الخادم لا يستجيب بشكل صحيح. حاول مرة أخرى لاحقًا.";
+"error.network.decoding" = "البيانات المستلمة غير صالحة.";
+"error.unknown" = "حدث خطأ غير متوقع.";
+
+/* تفاصيل الوصفة */
+"detail.ingredients" = "المكونات";
+"detail.ingredients.count" = "عدد المكونات: %d";
+"detail.instructions" = "طريقة التحضير";
+"detail.video" = "شاهد الفيديو";
+"detail.sourceNote" = "الوصفة بالإنجليزية (المصدر: TheMealDB)";
+
+/* الإعدادات */
+"settings.title" = "الإعدادات";
+"settings.appearance" = "المظهر";
+"settings.theme" = "السمة";
+"settings.language" = "اللغة";
+"settings.about" = "حول التطبيق";
+"settings.version" = "الإصدار";
+"settings.api" = "بيانات الوصفات";
+"theme.system" = "النظام";
+"theme.light" = "فاتح";
+"theme.dark" = "داكن";

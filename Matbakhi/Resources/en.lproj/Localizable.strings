@@ -1,0 +1,66 @@
+/* App */
+"app.name" = "Matbakhi";
+"app.tagline" = "Cook, plan, share";
+
+/* Tabs */
+"tab.home" = "Home";
+"tab.search" = "Search";
+"tab.settings" = "Settings";
+
+/* Onboarding */
+"onboarding.1.title" = "Thousands of recipes";
+"onboarding.1.text" = "Explore cuisines from around the world and the flavors of Tunisia.";
+"onboarding.2.title" = "Plan your meals";
+"onboarding.2.text" = "Organize your week and generate your shopping list.";
+"onboarding.3.title" = "Share your creations";
+"onboarding.3.text" = "Publish your own recipes for the community.";
+"onboarding.next" = "Next";
+"onboarding.start" = "Get started";
+"onboarding.skip" = "Skip";
+
+/* Home */
+"home.greeting" = "What are we cooking today?";
+"home.featured" = "Recipe of the day";
+"home.categories" = "Categories";
+"home.tunisian" = "Flavors of Tunisia";
+"home.seeAll" = "See all";
+
+/* Search */
+"search.prompt" = "Search for a recipe…";
+"search.idle.title" = "Find your next recipe";
+"search.idle.message" = "Type at least 2 letters (e.g. pasta, chicken, couscous).";
+"search.empty.title" = "No results";
+"search.empty.message" = "No recipe matches “%@”.";
+
+/* States */
+"state.loading" = "Loading…";
+"state.retry" = "Try again";
+"state.error.title" = "Oops!";
+"state.empty.title" = "Nothing to show";
+"state.empty.message" = "There are no recipes here yet.";
+
+/* Errors */
+"error.network.invalidURL" = "Invalid address.";
+"error.network.offline" = "No internet connection. Check your network and try again.";
+"error.network.server" = "The server is not responding correctly. Please try again later.";
+"error.network.decoding" = "The data received is invalid.";
+"error.unknown" = "An unexpected error occurred.";
+
+/* Recipe detail */
+"detail.ingredients" = "Ingredients";
+"detail.ingredients.count" = "%d ingredients";
+"detail.instructions" = "Instructions";
+"detail.video" = "Watch the video";
+"detail.sourceNote" = "Recipe source: TheMealDB";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.appearance" = "Appearance";
+"settings.theme" = "Theme";
+"settings.language" = "Language";
+"settings.about" = "About";
+"settings.version" = "Version";
+"settings.api" = "Recipe data";
+"theme.system" = "System";
+"theme.light" = "Light";
+"theme.dark" = "Dark";

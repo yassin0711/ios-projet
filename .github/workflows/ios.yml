@@ -1,0 +1,87 @@
+# Compile l'app, lance les tests et prend des captures d'écran sur un Mac GitHub.
+# Permet de vérifier le code depuis Windows, sans avoir de Mac sous la main.
+name: iOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-test-screenshots:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Installer XcodeGen
+        run: brew install xcodegen
+
+      - name: Générer le projet Xcode
+        run: xcodegen generate
+
+      - name: Cache des packages Swift
+        uses: actions/cache@v4
+        with:
+          path: SourcePackages
+          key: spm-${{ runner.os }}-${{ hashFiles('project.yml') }}
+
+      - name: Choisir un simulateur iPhone
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c "
+          import json, sys
+          devices = json.load(sys.stdin)['devices']
+          print(next(d['udid'] for runtime, items in devices.items() if 'iOS' in runtime
+                     for d in items if d['name'].startswith('iPhone')))")
+          echo "DEVICE_ID=$DEVICE_ID" >> "$GITHUB_ENV"
+
+      - name: Compiler et lancer les tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Matbakhi.xcodeproj \
+            -scheme Matbakhi \
+            -destination "id=$DEVICE_ID" \
+            -derivedDataPath build \
+            -clonedSourcePackagesDirPath SourcePackages \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Captures d'écran (clair FR, sombre EN, arabe)
+        run: |
+          APP=build/Build/Products/Debug-iphonesimulator/Matbakhi.app
+          BUNDLE=com.matbakhi.app
+          mkdir -p screenshots
+          xcrun simctl boot "$DEVICE_ID" || true
+          xcrun simctl install "$DEVICE_ID" "$APP"
+          shoot() {
+            xcrun simctl terminate "$DEVICE_ID" "$BUNDLE" || true
+            xcrun simctl launch "$DEVICE_ID" "$BUNDLE" -skipOnboarding YES -app.language "$2" -app.theme "$3"
+            sleep 12
+            xcrun simctl io "$DEVICE_ID" screenshot "screenshots/$1.png"
+          }
+          shoot accueil-fr-clair fr light
+          shoot accueil-en-sombre en dark
+          shoot accueil-ar ar system
+
+      - name: Publier les captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: captures-ecran
+          path: screenshots/
+          if-no-files-found: ignore
+
+      # App compilée pour simulateur : peut être lancée dans un navigateur (ex. appetize.io)
+      - name: Empaqueter l'app pour un simulateur en ligne
+        run: |
+          cd build/Build/Products/Debug-iphonesimulator
+          ditto -c -k --sequesterRsrc --keepParent Matbakhi.app "$GITHUB_WORKSPACE/Matbakhi-simulateur.zip"
+
+      - name: Publier l'app pour simulateur
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-simulateur
+          path: Matbakhi-simulateur.zip
