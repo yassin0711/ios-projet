@@ -16,11 +16,6 @@ struct MatbakhiApp: App {
         if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
             FirebaseApp.configure()
         }
-
-        // Utilisé par GitHub Actions pour les captures d'écran : on saute la présentation
-        if UserDefaults.standard.bool(forKey: "skipOnboarding") {
-            UserDefaults.standard.set(true, forKey: RootView.onboardingKey)
-        }
     }
 
     var body: some Scene {

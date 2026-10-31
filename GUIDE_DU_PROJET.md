@@ -16,10 +16,9 @@ fichier par fichier, et relie chaque notion au cours (chapitres 1 à 6).
 6. [Ce qui se passe quand on cherche « pasta »](#6-ce-qui-se-passe-quand-on-cherche--pasta-)
 7. [Changer de thème ou de langue](#7-changer-de-thème-ou-de-langue)
 8. [La connexion et les favoris (Firebase)](#8-la-connexion-et-les-favoris-firebase)
-9. [Les tests](#9-les-tests)
-10. [Ajouter un nouvel écran : la marche à suivre](#10-ajouter-un-nouvel-écran--la-marche-à-suivre)
-11. [Questions possibles à l'oral](#11-questions-possibles-à-loral)
-12. [Glossaire](#12-glossaire)
+9. [Ajouter un nouvel écran : la marche à suivre](#9-ajouter-un-nouvel-écran--la-marche-à-suivre)
+10. [Questions possibles à l'oral](#10-questions-possibles-à-loral)
+11. [Glossaire](#11-glossaire)
 
 ---
 
@@ -54,7 +53,7 @@ Splash → Présentation (1re fois) → Connexion ──→ Inscription / Mot de
 ## 2. La grande idée : chaque fichier a un seul rôle
 
 Si on met tout dans la vue (affichage, appel réseau, gestion des erreurs), le code devient vite
-illisible et impossible à tester. Le projet suit donc l'architecture **MVVM** (chapitre 3), complétée
+illisible. Le projet suit donc l'architecture **MVVM** (chapitre 3), complétée
 par le pattern **Repository** (chapitre 5).
 
 Pour retenir, pensez à un restaurant :
@@ -153,9 +152,7 @@ et le Repository ne sait rien de l'affichage.
 |---|---|
 | `Resources/fr.lproj`, `en.lproj`, `ar.lproj` | Les textes traduits (`Localizable.strings`) |
 | `Resources/Assets.xcassets` | Icône de l'app et couleur principale (orange) |
-| [MatbakhiTests/](MatbakhiTests/) | Tests unitaires (chapitre 6) |
-| [project.yml](project.yml) | Description du projet Xcode (lue par XcodeGen) |
-| [.github/workflows/ios.yml](.github/workflows/ios.yml) | Compilation automatique sur un Mac de GitHub |
+| `Matbakhi.xcodeproj` | Projet Xcode, à créer une fois sur le Mac (voir README) |
 | [firestore.rules](firestore.rules) | Règles de sécurité Firestore, à publier dans la console Firebase |
 
 ---
@@ -260,11 +257,9 @@ protocol MealRepository {
 }
 ```
 
-Deux classes respectent ce contrat :
-- `TheMealDBRepository` appelle la vraie API ;
-- `MockMealRepository` (dans les tests) renvoie des données inventées, sans Internet.
-
-Le ViewModel ne connaît que le protocole, donc on peut lui donner l'un ou l'autre.
+`TheMealDBRepository` respecte ce contrat en appelant la vraie API. Le ViewModel ne connaît que le
+protocole : on pourrait lui donner une autre implémentation (par exemple une fausse version qui
+renvoie des données fixes) sans changer une ligne du ViewModel.
 
 Le projet utilise aussi des protocoles fournis par Apple :
 
@@ -274,7 +269,6 @@ Le projet utilise aussi des protocoles fournis par Apple :
 | `Hashable` | Nécessaire pour la navigation par valeur (`NavigationLink(value:)`) |
 | `Decodable` | Permet de créer l'objet à partir du JSON |
 | `ObservableObject` | Permet à la vue d'observer le ViewModel |
-| `Equatable` | Permet de comparer deux valeurs avec `==` (utile dans les tests) |
 
 ### 4.6 Les extensions (chapitre 1)
 
@@ -564,8 +558,8 @@ il suffit que Firebase change `user`. Sans le fichier `GoogleService-Info.plist`
 1. `GIDSignIn` ouvre la fenêtre de connexion Google.
 2. Google renvoie un jeton (`idToken`) qui prouve l'identité de l'utilisateur.
 3. On donne ce jeton à Firebase (`GoogleAuthProvider.credential`), qui connecte l'utilisateur.
-4. `.onOpenURL`, dans `MatbakhiApp`, gère le retour dans l'app. Il faut pour cela remplacer
-   `REVERSED_CLIENT_ID` dans `project.yml` (voir README).
+4. `.onOpenURL`, dans `MatbakhiApp`, gère le retour dans l'app. Il faut pour cela ajouter
+   `REVERSED_CLIENT_ID` dans les *URL Types* de l'onglet Info d'Xcode (voir README).
 
 ### Les favoris dans Firestore
 
@@ -582,46 +576,7 @@ users/{uid}/favorites/{idRecette}   { name, thumbnail, area }  ← un document p
 
 ---
 
-## 9. Les tests
-
-**Le principe (chapitre 6)** : on teste les ViewModels **sans Internet**, en leur donnant un faux
-Repository, [MockMealRepository.swift](MatbakhiTests/MockMealRepository.swift). Dans un test, on
-choisit ce que le mock renvoie (`meals`, `detail`) ou l'erreur qu'il lance (`error`). Il compte
-aussi combien de fois il a été appelé (`searchCallCount`).
-
-Chaque test suit la structure **Arrange → Act → Assert** :
-
-```swift
-func testSearchOfflineShowsErrorMessage() async {
-    // Arrange : un faux Repository qui simule l'absence de réseau
-    let repository = MockMealRepository()
-    repository.error = NetworkError.noConnection
-    let viewModel = SearchViewModel(repository: repository)
-    viewModel.query = "pasta"
-
-    // Act : on lance la recherche
-    await viewModel.search()
-
-    // Assert : l'écran doit afficher le message « pas de connexion »
-    XCTAssertEqual(viewModel.state, .failed("error.network.offline"))
-}
-```
-
-Les 17 tests existants couvrent le succès, l'état vide **et** l'échec :
-
-| Fichier | Ce qui est testé |
-|---|---|
-| [MealDecodingTests.swift](MatbakhiTests/MealDecodingTests.swift) | Le JSON est bien décodé (champs vides ignorés, recette partielle, `"meals": null`) |
-| [SearchViewModelTests.swift](MatbakhiTests/SearchViewModelTests.swift) | Résultats, aucun résultat, pas de réseau, recherche vide |
-| [HomeAndDetailViewModelTests.swift](MatbakhiTests/HomeAndDetailViewModelTests.swift) | Accueil (succès, erreur serveur, vide) et détail (complet, partiel, erreur) |
-| [ValidationTests.swift](MatbakhiTests/ValidationTests.swift) | Règles des formulaires : e-mail, mot de passe, nom, confirmation |
-
-**Pour lancer les tests** : ⌘U dans Xcode sur un Mac. Ils sont aussi lancés automatiquement par
-GitHub Actions à chaque envoi de code.
-
----
-
-## 10. Ajouter un nouvel écran : la marche à suivre
+## 9. Ajouter un nouvel écran : la marche à suivre
 
 Exemple : l'écran « Favoris ». Suivez toujours le même ordre.
 
@@ -658,17 +613,16 @@ Exemple : l'écran « Favoris ». Suivez toujours le même ordre.
    `ErrorStateView` et `EmptyStateView`.
 5. **Navigation** : ajoutez un onglet dans `MainTabView`, ou un `NavigationLink`.
 6. **Textes** : ajoutez les clés dans les 3 fichiers `Localizable.strings`.
-7. **Tests** : un mock du nouveau Repository, puis des tests de succès **et** d'échec.
-8. **Sur Mac**, relancez `xcodegen generate`, car de nouveaux fichiers ont été ajoutés. Envoyez le
-   code sur GitHub : GitHub Actions vérifie que tout compile.
+7. **Sur le Mac**, récupérez le code (`git pull`) puis lancez l'app (⌘R) pour vérifier.
+   Avec Xcode 15, ajoutez d'abord les nouveaux fichiers (Add Files to "Matbakhi"…).
 
 ---
 
-## 11. Questions possibles à l'oral
+## 10. Questions possibles à l'oral
 
 **Pourquoi l'architecture MVVM ?**
 Chaque fichier a un seul rôle : la vue affiche, le ViewModel gère la logique, le Repository va
-chercher les données. Le code est plus lisible, et on peut tester la logique sans l'interface.
+chercher les données. Le code est plus lisible et plus facile à modifier.
 
 **Quelle différence entre `@StateObject` et `@ObservedObject` ?**
 `@StateObject` : la vue crée le ViewModel et le garde en vie. `@ObservedObject` : la vue reçoit un
@@ -680,8 +634,8 @@ recréé à chaque rafraîchissement.
 SwiftUI pour que les changements soient vus, et `ObservableObject` exige une `class`.
 
 **À quoi sert le protocole `MealRepository` ?**
-Le ViewModel dépend du contrat, pas de l'API. En production, on lui donne `TheMealDBRepository` ;
-en test, `MockMealRepository`. C'est l'injection de dépendances.
+Le ViewModel dépend du contrat, pas de l'API. Il reçoit son Repository dans `init` : c'est
+l'injection de dépendances. On peut ainsi changer la source des données sans toucher au ViewModel.
 
 **Comment gérez-vous les erreurs réseau ?**
 Le Repository lance une `NetworkError` précise : pas de connexion, erreur serveur ou JSON invalide.
@@ -721,13 +675,9 @@ Les textes sont dans un fichier `Localizable.strings` par langue. La langue choi
 avec `@AppStorage`, et `.id(language)` reconstruit l'interface pour retraduire tous les textes.
 Pour l'arabe, la mise en page est inversée avec `layoutDirection`.
 
-**Comment testez-vous sans Internet ?**
-Avec un mock du Repository qui renvoie des données fixes ou une erreur choisie. Les tests sont
-rapides et donnent toujours le même résultat.
-
 ---
 
-## 12. Glossaire
+## 11. Glossaire
 
 | Terme | Signification |
 |---|---|
@@ -738,7 +688,6 @@ rapides et donnent toujours le même résultat.
 | **Binding (`$`)** | Lien dans les deux sens entre une donnée et un contrôle (champ de texte, interrupteur…) |
 | **Modificateur** | Fonction appliquée à une vue (`.padding()`, `.font()`…) qui renvoie une nouvelle vue |
 | **NavigationStack** | Pile d'écrans : on « pousse » un écran par-dessus, le bouton retour l'enlève |
-| **Mock** | Fausse version d'un composant, utilisée dans les tests |
 | **Injection de dépendances** | Donner à un objet ce dont il a besoin (son Repository) au lieu qu'il le crée lui-même |
 | **RTL** | *Right-to-left* : écriture de droite à gauche, comme l'arabe |
 | **UserDefaults** | Petit espace de stockage du téléphone pour les réglages (utilisé par `@AppStorage`) |
@@ -747,5 +696,3 @@ rapides et donnent toujours le même résultat.
 | **Cloud Firestore** | Base de données de Firebase, organisée en collections et documents |
 | **Listener (écouteur)** | Code appelé automatiquement à chaque changement (connexion, données Firestore) |
 | **SPM** | *Swift Package Manager* : télécharge et intègre les SDK dans le projet |
-| **XcodeGen** | Outil qui génère le projet Xcode à partir de `project.yml` |
-| **GitHub Actions / CI** | Compilation et tests automatiques sur un Mac de GitHub à chaque envoi de code |

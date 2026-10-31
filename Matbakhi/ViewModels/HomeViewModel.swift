@@ -1,6 +1,6 @@
 import Foundation
 
-struct HomeContent: Equatable {
+struct HomeContent {
     let featured: Meal?
     let categories: [MealCategory]
     let tunisianMeals: [Meal]
@@ -12,7 +12,7 @@ final class HomeViewModel: ObservableObject {
 
     private let repository: MealRepository
 
-    /// Injection de dépendances (chapitre 6) : en test on passe un faux Repository
+    /// Injection de dépendances (chapitre 6) : le Repository est reçu de l'extérieur
     init(repository: MealRepository = TheMealDBRepository()) {
         self.repository = repository
     }

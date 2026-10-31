@@ -63,7 +63,7 @@ struct MealsResponse: Decodable {
     let meals: [Meal]?
 }
 
-// MARK: - Exemple pour les aperçus (#Preview) et les tests
+// MARK: - Exemple pour les aperçus (#Preview)
 
 extension Meal {
     static let preview = Meal(

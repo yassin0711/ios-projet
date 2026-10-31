@@ -1,17 +1,11 @@
-# Projet généré par XcodeGen (voir project.yml)
-*.xcodeproj
-Matbakhi/Info.plist
-
-# Xcode
+# Xcode (fichiers personnels et générés)
 build/
 DerivedData/
-SourcePackages/
 xcuserdata/
 *.xcuserstate
 
 # Divers
 .DS_Store
-screenshots/
 
 # Configuration Firebase : jamais envoyée sur GitHub tant que le dépôt est public
 # (la partager entre membres de l'équipe par un autre moyen)

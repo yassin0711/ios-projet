@@ -2,10 +2,8 @@ import SwiftUI
 
 /// Aiguillage principal : écran de lancement → présentation (1re fois) → connexion → app
 struct RootView: View {
-    static let onboardingKey = "onboarding.done"
-
     @EnvironmentObject private var auth: AuthService
-    @AppStorage(RootView.onboardingKey) private var onboardingDone = false
+    @AppStorage("onboarding.done") private var onboardingDone = false
     @AppStorage(AppLanguage.storageKey) private var language: AppLanguage = .deviceDefault
     @State private var showSplash = true
 

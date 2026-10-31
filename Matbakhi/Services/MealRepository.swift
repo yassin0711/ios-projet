@@ -1,7 +1,7 @@
 import Foundation
 
 /// Contrat d'accès aux recettes (chapitre 5 : pattern Repository).
-/// Les ViewModels dépendent de ce protocole, pas de l'API : en test on injecte un mock.
+/// Les ViewModels dépendent de ce protocole, pas directement de l'API.
 protocol MealRepository {
     func searchMeals(query: String) async throws -> [Meal]
     func mealDetail(id: String) async throws -> Meal?

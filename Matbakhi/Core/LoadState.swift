@@ -9,5 +9,3 @@ enum LoadState<Value> {
     /// Clé de traduction du message d'erreur
     case failed(String)
 }
-
-extension LoadState: Equatable where Value: Equatable {}
