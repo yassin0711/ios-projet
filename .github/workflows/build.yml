@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Choisir Xcode 16.2
         run: |
@@ -22,6 +22,14 @@ jobs:
             fi
           done
           echo "::notice title=Xcode::$(xcodebuild -version | tr '\n' ' ')"
+
+      - name: Installer le simulateur iOS de cet Xcode (s'il manque)
+        run: |
+          sdk=$(xcrun --sdk iphonesimulator --show-sdk-version)
+          if ! xcrun simctl list runtimes | grep -q "iOS $sdk"; then
+            xcodebuild -downloadPlatform iOS
+          fi
+          echo "::notice title=Simulateurs::$(xcrun simctl list runtimes | grep iOS | tr '\n' ' ')"
 
       - name: Compiler
         run: |
