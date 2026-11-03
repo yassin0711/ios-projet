@@ -1,0 +1,46 @@
+# Compilation de l'app sur un Mac de GitHub, avec Xcode 16.2 comme au labo (temporaire)
+name: Compilation iOS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Choisir Xcode 16.2
+        run: |
+          for v in 16.2 16.3 16.4 16.1; do
+            if [ -d "/Applications/Xcode_$v.app" ]; then
+              sudo xcode-select -s "/Applications/Xcode_$v.app"
+              break
+            fi
+          done
+          echo "::notice title=Xcode::$(xcodebuild -version | tr '\n' ' ')"
+
+      - name: Compiler
+        run: |
+          set -o pipefail
+          xcodebuild -project Matbakhi.xcodeproj -scheme Matbakhi \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build 2>&1 | tee build.log
+
+      - name: Erreurs
+        if: failure()
+        run: |
+          errors=$(grep -E "error:" build.log | sort -u | head -40)
+          [ -z "$errors" ] && errors=$(tail -40 build.log)
+          echo "::error title=Erreurs::$(printf '%s\n' "$errors" | awk 'BEGIN{ORS="%0A"} {gsub(/%/,"%25"); print}')"
+
+      - name: Vérifications
+        run: |
+          APP=build/Build/Products/Debug-iphonesimulator/Matbakhi.app
+          info=$(plutil -p "$APP/Info.plist" | grep -E "CFBundleIdentifier|GADApplicationIdentifier|googleusercontent|MinimumOSVersion|CFBundleDisplayName")
+          echo "::notice title=Info.plist::$(printf '%s\n' "$info" | awk 'BEGIN{ORS="%0A"} {print}')"
+          echo "::notice title=Contenu de l'app::$(ls "$APP" | tr '\n' ' ') | fr: $(ls "$APP/fr.lproj" 2>/dev/null | tr '\n' ' ')"
+          echo "::notice title=Package.resolved::$(base64 < Matbakhi.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved | tr -d '\n')"
