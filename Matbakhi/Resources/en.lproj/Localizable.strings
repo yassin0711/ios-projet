@@ -1,6 +1,6 @@
 /* App */
 "app.name" = "Matbakhi";
-"app.tagline" = "Cook, plan, share";
+"app.tagline" = "Cook, plan, enjoy";
 
 /* Tabs */
 "tab.home" = "Home";
@@ -12,8 +12,8 @@
 "onboarding.1.text" = "Explore cuisines from around the world and the flavors of Tunisia.";
 "onboarding.2.title" = "Plan your meals";
 "onboarding.2.text" = "Organize your week and generate your shopping list.";
-"onboarding.3.title" = "Share your creations";
-"onboarding.3.text" = "Publish your own recipes for the community.";
+"onboarding.3.title" = "Keep your favorite recipes";
+"onboarding.3.text" = "Add recipes to your favorites and find them on all your devices.";
 "onboarding.next" = "Next";
 "onboarding.start" = "Get started";
 "onboarding.skip" = "Skip";
@@ -101,3 +101,33 @@
 /* Favorites */
 "favorites.empty.title" = "No favorites yet";
 "favorites.empty.message" = "Tap the heart on a recipe to find it here.";
+
+/* Meal plan */
+"tab.planning" = "Meal plan";
+"day.monday" = "Monday";
+"day.tuesday" = "Tuesday";
+"day.wednesday" = "Wednesday";
+"day.thursday" = "Thursday";
+"day.friday" = "Friday";
+"day.saturday" = "Saturday";
+"day.sunday" = "Sunday";
+"planning.empty.title" = "Empty week";
+"planning.empty.message" = "Open a recipe and tap the calendar to plan it for a day of the week.";
+"planning.noMeal" = "No meal planned";
+"planning.remove" = "Remove";
+"detail.planOn" = "Plan for…";
+
+/* Shopping list */
+"detail.addToShopping" = "Add to shopping list";
+"detail.addedToShopping" = "Added to shopping list";
+"shopping.title" = "Shopping list";
+"shopping.empty.title" = "Empty list";
+"shopping.empty.message" = "Tap + to add an item, or “Add to shopping list” on a recipe to add its ingredients.";
+"shopping.clearDone" = "Clear bought items";
+
+/* “Add an item” form */
+"shopping.add" = "Add an item";
+"shopping.item.name" = "Item name";
+"shopping.item.quantity" = "Quantity (e.g. 500 g)";
+"shopping.item.add" = "Add";
+"common.cancel" = "Cancel";

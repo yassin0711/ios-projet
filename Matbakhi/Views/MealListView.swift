@@ -4,8 +4,6 @@ import SwiftUI
 struct MealListView: View {
     @StateObject private var viewModel: MealListViewModel
 
-    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
-
     init(source: MealListSource) {
         // @StateObject : c'est cette vue qui crée et possède le ViewModel
         _viewModel = StateObject(wrappedValue: MealListViewModel(source: source))
@@ -28,27 +26,14 @@ struct MealListView: View {
         case .idle, .loading:
             LoadingStateView()
         case .empty:
-            EmptyStateView(
-                systemImage: "fork.knife",
-                title: "state.empty.title".localized,
-                message: "state.empty.message".localized
-            )
-        case .failed(let messageKey):
-            ErrorStateView(messageKey: messageKey) {
+            ContentUnavailableView("state.empty.title".localized, systemImage: "fork.knife",
+                                   description: Text("state.empty.message".localized))
+        case .failed(let error):
+            ErrorStateView(error: error) {
                 Task { await viewModel.load() }
             }
         case .loaded(let meals):
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 16) {
-                    ForEach(meals) { meal in
-                        NavigationLink(value: meal) {
-                            MealCard(meal: meal)
-                        }
-                        .buttonStyle(PressableButtonStyle())
-                    }
-                }
-                .padding()
-            }
+            MealGrid(meals: meals)
         }
     }
 }

@@ -68,25 +68,17 @@ final class TheMealDBRepository: MealRepository {
         components?.queryItems = query.map { URLQueryItem(name: $0.key, value: $0.value) }
         guard let url = components?.url else { throw NetworkError.invalidURL }
 
-        let result: (Data, URLResponse)
-        do {
-            result = try await URLSession.shared.data(from: url)
-        } catch let error as URLError where error.code == .cancelled {
-            throw CancellationError()   // écran quitté pendant le chargement : ce n'est pas une erreur
-        } catch {
+        guard let result = try? await URLSession.shared.data(from: url) else {
             throw NetworkError.noConnection
         }
         let (data, response) = result
-
         // Code de statut HTTP : 200 = succès, 404 / 500 = erreur
-        if let http = response as? HTTPURLResponse, http.statusCode != 200 {
+        guard (response as? HTTPURLResponse)?.statusCode == 200 else {
             throw NetworkError.server
         }
-
-        do {
-            return try JSONDecoder().decode(T.self, from: data)
-        } catch {
+        guard let decoded = try? JSONDecoder().decode(T.self, from: data) else {
             throw NetworkError.decoding
         }
+        return decoded
     }
 }

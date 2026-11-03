@@ -15,7 +15,7 @@ struct OnboardingView: View {
     private let pages = [
         OnboardingPage(systemImage: "fork.knife", titleKey: "onboarding.1.title", textKey: "onboarding.1.text"),
         OnboardingPage(systemImage: "calendar", titleKey: "onboarding.2.title", textKey: "onboarding.2.text"),
-        OnboardingPage(systemImage: "person.3.fill", titleKey: "onboarding.3.title", textKey: "onboarding.3.text"),
+        OnboardingPage(systemImage: "heart.fill", titleKey: "onboarding.3.title", textKey: "onboarding.3.text"),
     ]
 
     private var isLastPage: Bool { currentPage == pages.count - 1 }

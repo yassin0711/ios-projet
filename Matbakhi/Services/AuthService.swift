@@ -91,3 +91,10 @@ final class AuthService: ObservableObject {
         }
     }
 }
+
+/// Collection Firestore de l'utilisateur connecté : users/{uid}/{name}
+/// (nil si Firebase n'est pas configuré ou si personne n'est connecté)
+func userCollection(_ name: String) -> CollectionReference? {
+    guard FirebaseApp.app() != nil, let uid = Auth.auth().currentUser?.uid else { return nil }
+    return Firestore.firestore().collection("users").document(uid).collection(name)
+}

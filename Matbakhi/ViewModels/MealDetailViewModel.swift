@@ -4,12 +4,10 @@ import Foundation
 final class MealDetailViewModel: ObservableObject {
     @Published private(set) var state: LoadState<Meal>
 
-    let title: String
     private let mealID: String
     private let repository: MealRepository
 
     init(meal: Meal, repository: MealRepository = TheMealDBRepository()) {
-        title = meal.name
         mealID = meal.id
         self.repository = repository
         // Recette déjà complète (recherche, recette du jour) : rien à charger
@@ -24,10 +22,9 @@ final class MealDetailViewModel: ObservableObject {
             } else {
                 state = .empty
             }
-        } catch is CancellationError {
-            state = .idle
         } catch {
-            state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
+            // Écran quitté pendant le chargement (tâche annulée) : on rechargera au retour
+            state = Task.isCancelled ? .idle : .failed(error)
         }
     }
 }

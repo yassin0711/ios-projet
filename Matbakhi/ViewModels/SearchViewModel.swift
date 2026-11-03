@@ -20,10 +20,9 @@ final class SearchViewModel: ObservableObject {
         do {
             let meals = try await repository.searchMeals(query: text)
             state = meals.isEmpty ? .empty : .loaded(meals)
-        } catch is CancellationError {
-            state = .idle
         } catch {
-            state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
+            // Écran quitté pendant le chargement (tâche annulée) : on rechargera au retour
+            state = Task.isCancelled ? .idle : .failed(error)
         }
     }
 }

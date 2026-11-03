@@ -1,6 +1,6 @@
 /* التطبيق */
 "app.name" = "مطبخي";
-"app.tagline" = "اطبخ، خطّط، شارك";
+"app.tagline" = "اطبخ، خطّط، استمتع";
 
 /* التبويبات */
 "tab.home" = "الرئيسية";
@@ -12,8 +12,8 @@
 "onboarding.1.text" = "اكتشف مطابخ العالم ونكهات تونس.";
 "onboarding.2.title" = "خطّط وجباتك";
 "onboarding.2.text" = "نظّم أسبوعك وأنشئ قائمة مشترياتك.";
-"onboarding.3.title" = "شارك إبداعاتك";
-"onboarding.3.text" = "انشر وصفاتك الخاصة ليستفيد منها الجميع.";
+"onboarding.3.title" = "احتفظ بوصفاتك المفضلة";
+"onboarding.3.text" = "أضف وصفاتك إلى المفضلة واعثر عليها على جميع أجهزتك.";
 "onboarding.next" = "التالي";
 "onboarding.start" = "ابدأ";
 "onboarding.skip" = "تخطٍّ";
@@ -101,3 +101,33 @@
 /* المفضلة */
 "favorites.empty.title" = "لا توجد مفضلات";
 "favorites.empty.message" = "اضغط على القلب في وصفة لتجدها هنا.";
+
+/* التخطيط */
+"tab.planning" = "التخطيط";
+"day.monday" = "الاثنين";
+"day.tuesday" = "الثلاثاء";
+"day.wednesday" = "الأربعاء";
+"day.thursday" = "الخميس";
+"day.friday" = "الجمعة";
+"day.saturday" = "السبت";
+"day.sunday" = "الأحد";
+"planning.empty.title" = "أسبوع فارغ";
+"planning.empty.message" = "افتح وصفة ثم اضغط على التقويم لتخطيطها ليوم من أيام الأسبوع.";
+"planning.noMeal" = "لا توجد وجبة مخططة";
+"planning.remove" = "إزالة";
+"detail.planOn" = "خطّط ليوم…";
+
+/* قائمة التسوق */
+"detail.addToShopping" = "أضف إلى قائمة التسوق";
+"detail.addedToShopping" = "تمت الإضافة إلى قائمة التسوق";
+"shopping.title" = "قائمة التسوق";
+"shopping.empty.title" = "القائمة فارغة";
+"shopping.empty.message" = "اضغط على + لإضافة منتج، أو على «أضف إلى قائمة التسوق» في وصفة لإضافة مكوناتها.";
+"shopping.clearDone" = "حذف المشتريات";
+
+/* نموذج «إضافة منتج» */
+"shopping.add" = "إضافة منتج";
+"shopping.item.name" = "اسم المنتج";
+"shopping.item.quantity" = "الكمية (مثال: 500 غ)";
+"shopping.item.add" = "إضافة";
+"common.cancel" = "إلغاء";

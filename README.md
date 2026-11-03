@@ -1,9 +1,9 @@
 # Matbakhi (مطبخي) — mini-projet iOS
 
 Application de recettes en SwiftUI : recettes du monde et de Tunisie (API TheMealDB), favoris,
-planning des repas de la semaine, liste de courses et recettes partagées par la communauté (Firebase).
+planning des repas de la semaine et liste de courses (Firebase).
 
-> Le nom et l'angle « Tunisie + planning + communauté » rendent le sujet distinct d'une simple app
+> Le nom et l'angle « Tunisie + planning + liste de courses » rendent le sujet distinct d'une simple app
 > de recettes : les projets similaires entre équipes sont notés 0.
 
 📘 **Vous débutez en Swift ?** Lisez [GUIDE_DU_PROJET.md](GUIDE_DU_PROJET.md) : il explique le projet
@@ -15,18 +15,17 @@ fichier par fichier, avec les notions du cours.
 |---|---|---|
 | SwiftUI | Toute l'app | ✅ |
 | Firebase Authentication (email/mot de passe + Google) | `AuthService` : Connexion, Inscription, Mot de passe oublié, bouton Google | ✅ (à tester avec le fichier Firebase) |
-| Cloud Firestore | Profil (`users/{uid}`) et favoris en temps réel (`FavoritesService`) ✅ ; planning, courses, communauté ⏳ | ✅ partiel |
-| Au moins 9 interfaces | 16 prévues (voir ci-dessous) | 11 faites ✅ |
+| Cloud Firestore | Profil, favoris, planning, liste de courses, en temps réel | ✅ |
+| Au moins 9 interfaces | 14 interfaces (voir ci-dessous) | ✅ |
 | Navigation | `TabView` + `NavigationStack` + sheets | ✅ (à compléter) |
-| Formulaires avec validation | `Validation` + `FormField` : connexion, inscription, mot de passe oublié ✅ ; créer une recette ⏳ | ✅ partiel |
+| Formulaires avec validation | `Validation` + `FormField` : connexion, inscription, mot de passe oublié, ajouter un article | ✅ |
 | API REST | TheMealDB (gratuite, sans clé) via `MealRepository` | ✅ |
-| Animations | Splash, présentation, cartes (rebond au toucher), ingrédients qui apparaissent un par un, cœur des favoris qui rebondit, chargement | ✅ (d'autres à venir) |
+| Animations | Splash, présentation, cartes (rebond au toucher), ingrédients qui apparaissent un par un, cœur des favoris qui rebondit, articles cochés, chargement | ✅ |
 | Thème clair / sombre modifiable | Réglages → Apparence | ✅ |
 | Multilingue FR / EN / AR (droite à gauche) | Réglages → Langue | ✅ |
-| Chargement, erreurs, états vides | `LoadState` + `LoadingStateView` / `ErrorStateView` / `EmptyStateView` | ✅ |
-| Google Mobile Ads : Banner + Interstitial (ID de test) | SDK démarré dans `AppDelegate`, identifiant de test dans l'onglet Info d'Xcode | ⏳ |
-| Bonus : hors ligne | Cache des favoris avec SwiftData | ⏳ optionnel |
-| Bonus : widget iOS | Widget « Recette du jour » | ⏳ optionnel |
+| Chargement, erreurs, états vides | `LoadState` + `LoadingStateView` / `ErrorStateView` / `ContentUnavailableView` | ✅ |
+| Google Mobile Ads : Banner + Interstitial (ID de test) | Bannière en bas de l'accueil, interstitielle toutes les 3 recettes ouvertes (`Ads.swift`) | ✅ |
+| Bonus : hors ligne | Firestore garde une copie des favoris, du planning et des courses sur le téléphone | à vérifier en mode avion |
 
 ## Les écrans
 
@@ -40,14 +39,14 @@ fichier par fichier, avec les notions du cours.
 | 6 | Accueil (recette du jour, catégories, saveurs de Tunisie) | ✅ |
 | 7 | Recherche | ✅ |
 | 8 | Liste par catégorie / cuisine | ✅ |
-| 9 | Détail d'une recette (+ bouton favori) | ✅ (bouton planning à ajouter) |
+| 9 | Détail d'une recette (+ boutons favori, planning, courses) | ✅ |
 | 10 | Favoris | ✅ |
-| 11 | Planning de la semaine | ⏳ |
-| 12 | Liste de courses | ⏳ |
-| 13 | Communauté (recettes publiées) | ⏳ |
-| 14 | Créer une recette (formulaire) | ⏳ |
-| 15 | Profil / modifier le profil | ⏳ |
-| 16 | Réglages (+ compte et déconnexion) | ✅ |
+| 11 | Planning de la semaine | ✅ |
+| 12 | Liste de courses | ✅ |
+| 13 | Ajouter un article (formulaire avec validation) | ✅ |
+| 14 | Réglages (+ compte et déconnexion) | ✅ |
+
+Pour garder un mini-projet simple, la communauté, la création de recettes et le profil ne sont pas prévus.
 
 ## Répartition dans l'équipe
 
@@ -55,10 +54,10 @@ Chaque membre doit pouvoir présenter et expliquer sa partie.
 
 | Membre | Partie | Écrans |
 |---|---|---|
-| 1 | Authentification et profil : Firebase Auth, Google Sign-In, validation des formulaires | 3, 4, 5, 15 |
+| 1 | Authentification : Firebase Auth, Google Sign-In, validation des formulaires | 3, 4, 5 |
 | 2 | API et découverte : Repository, Codable, états chargement/erreur/vide | 6, 7, 8, 9 |
-| 3 | Firestore : favoris, planning, courses, communauté | 10, 11, 12, 13, 14 |
-| 4 | Expérience : thème, langues, animations, publicités AdMob, bonus | 1, 2, 16 + pubs |
+| 3 | Firestore : favoris, planning, liste de courses, formulaire « Ajouter un article » | 10, 11, 12, 13 |
+| 4 | Expérience : thème, langues, animations, publicités AdMob, bonus | 1, 2, 14 + pubs |
 
 À 3 membres : les tâches du membre 4 sont réparties entre les membres 1 et 2.
 
@@ -72,12 +71,11 @@ View (SwiftUI)  →  ViewModel (ObservableObject, @Published)  →  Repository (
 Matbakhi/
 ├── Matbakhi.xcodeproj       Projet Xcode (à créer une fois sur le Mac, voir « Mise en place »)
 ├── Matbakhi/
-│   ├── App/                 Point d'entrée, aiguillage, onglets
-│   ├── Core/                Thème, langue, traductions, LoadState, Validation
-│   ├── Models/              Meal, MealCategory (Codable + CodingKeys)
-│   ├── Services/            MealRepository (API), AuthService (connexion), FavoritesService (Firestore)
-│   ├── ViewModels/          Un ViewModel par écran
-│   ├── Views/               Écrans et composants réutilisables
+│   ├── MatbakhiApp.swift    Point d'entrée (@main)
+│   ├── Models/              Meal, MealCategory, thème et langue, LoadState, Validation
+│   ├── Services/            API, connexion, Firestore (favoris, planning, courses), publicités
+│   ├── ViewModels/          Un ViewModel par écran qui charge l'API
+│   ├── Views/               Écrans (sous-dossiers Auth/, Launch/, Planning/), aiguillage, onglets, Components.swift
 │   └── Resources/           Traductions fr/en/ar, images, icône
 └── firestore.rules          Règles de sécurité Firestore (à publier dans la console)
 ```
@@ -86,18 +84,16 @@ Règles suivies dans le code :
 - La vue qui **crée** un ViewModel utilise `@StateObject` ; une vue qui le **reçoit** utilise `@ObservedObject`.
 - Les ViewModels sont `@MainActor` (ils modifient l'interface).
 - Les ViewModels reçoivent leur Repository dans `init` (injection de dépendances, chapitre 6).
-- Les erreurs ne sont jamais avalées par un `try?` : elles deviennent un message traduit (`LoadState.failed`).
+- Les erreurs ne sont jamais perdues : elles deviennent un message traduit (`LoadState.failed` + `ErrorStateView`).
 - Les textes passent par `"clé".localized` (fichiers `Resources/<langue>.lproj/Localizable.strings`).
 
-### Modèle de données Firestore prévu
+### Modèle de données Firestore
 
 ```
-users/{uid}                      nom, email, photo, date d'inscription
-users/{uid}/favorites/{mealId}   nom, image, date d'ajout
-users/{uid}/mealPlan/{jour}      déjeuner, dîner (id + nom des recettes)
-users/{uid}/shoppingItems/{id}   ingrédient, quantité, coché
-recipes/{id}                     recette publiée : auteur, titre, ingrédients, étapes, date
-recipes/{id}/reviews/{uid}       note, commentaire
+users/{uid}                      name, email                          ✅
+users/{uid}/favorites/{mealId}   name, thumbnail, area                ✅
+users/{uid}/planning/{jour}      mealId, name, thumbnail, area        ✅ (jour = monday … sunday)
+users/{uid}/shopping/{id}        name, measure, done                  ✅
 ```
 
 ## Travailler sans Mac (depuis Windows)
@@ -153,8 +149,9 @@ une fois, puis l'envoie sur GitHub pour toute l'équipe.
 7. Ouvrir `ios-projet/Matbakhi.xcodeproj`.
    - **Xcode 16 ou plus récent** : le dossier `Matbakhi` du code apparaît tout seul, avec tous les fichiers.
    - **Xcode 15** : supprimer les fichiers en rouge (clic droit → Delete → *Remove Reference*), puis
-     clic droit sur le groupe `Matbakhi` → **Add Files to "Matbakhi"…** → sélectionner les dossiers
-     `App`, `Core`, `Models`, `Services`, `ViewModels`, `Views`, `Resources` → cible `Matbakhi` cochée → Add.
+     clic droit sur le groupe `Matbakhi` → **Add Files to "Matbakhi"…** → sélectionner
+     `MatbakhiApp.swift` et les dossiers `Models`, `Services`, `ViewModels`, `Views`, `Resources`
+     → cible `Matbakhi` cochée → Add.
 
 **b. Ajouter les SDK** (File → **Add Package Dependencies…**, une ligne à la fois)
 
@@ -199,7 +196,7 @@ Avec Xcode 15, il faut les ajouter avec **Add Files to "Matbakhi"…**.
 ## Prochaines étapes
 
 1. ~~Authentification : Connexion, Inscription, Mot de passe oublié, Google Sign-In.~~ ✅
-2. Firestore : ~~profil, favoris~~ ✅, planning, liste de courses.
-3. Communauté : liste des recettes publiées + formulaire « Créer une recette » avec validation.
-4. Publicités : bannière sur l'accueil, interstitielle après quelques recettes consultées.
-5. Bonus : favoris disponibles hors ligne (SwiftData), widget « Recette du jour ».
+2. ~~Firestore : profil, favoris, planning, liste de courses, formulaire « Ajouter un article ».~~ ✅
+3. ~~Publicités : bannière sur l'accueil, interstitielle après quelques recettes consultées.~~ ✅
+4. Créer le projet Xcode sur le Mac de l'école, puis tout tester (voir « Mise en place »).
+5. Bonus facultatif : vérifier en mode avion que favoris, planning et courses restent visibles.

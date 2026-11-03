@@ -26,10 +26,9 @@ final class HomeViewModel: ObservableObject {
 
             let content = HomeContent(featured: featured, categories: categories, tunisianMeals: tunisianMeals)
             state = categories.isEmpty ? .empty : .loaded(content)
-        } catch is CancellationError {
-            state = .idle   // écran quitté pendant le chargement : on rechargera au retour
         } catch {
-            state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
+            // Écran quitté pendant le chargement (tâche annulée) : on rechargera au retour
+            state = Task.isCancelled ? .idle : .failed(error)
         }
     }
 }

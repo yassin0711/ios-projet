@@ -2,8 +2,11 @@ import SwiftUI
 
 struct MealDetailView: View {
     @EnvironmentObject private var favorites: FavoritesService
+    @EnvironmentObject private var planning: PlanningService
+    @EnvironmentObject private var shopping: ShoppingService
     @StateObject private var viewModel: MealDetailViewModel
     @State private var showIngredients = false
+    @State private var addedToShopping = false
 
     private let meal: Meal
 
@@ -14,9 +17,22 @@ struct MealDetailView: View {
 
     var body: some View {
         content
-            .navigationTitle(viewModel.title)
+            .navigationTitle(meal.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Bouton planning : un menu pour choisir le jour
+                Menu {
+                    Section("detail.planOn".localized) {
+                        ForEach(WeekDay.allCases) { day in
+                            Button(day.titleKey.localized) {
+                                planning.plan(meal, on: day)
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: isPlanned ? "calendar.badge.checkmark" : "calendar.badge.plus")
+                }
+
                 // Bouton favori : le cœur rebondit quand on le touche
                 Button {
                     favorites.toggle(meal)
@@ -31,6 +47,14 @@ struct MealDetailView: View {
                     await viewModel.load()
                 }
             }
+            .task {
+                await InterstitialAdService.shared.mealOpened()
+            }
+    }
+
+    /// Vrai si la recette est déjà prévue un jour de la semaine
+    private var isPlanned: Bool {
+        planning.meals.values.contains { $0.id == meal.id }
     }
 
     @ViewBuilder
@@ -39,13 +63,10 @@ struct MealDetailView: View {
         case .idle, .loading:
             LoadingStateView()
         case .empty:
-            EmptyStateView(
-                systemImage: "fork.knife",
-                title: "state.empty.title".localized,
-                message: "state.empty.message".localized
-            )
-        case .failed(let messageKey):
-            ErrorStateView(messageKey: messageKey) {
+            ContentUnavailableView("state.empty.title".localized, systemImage: "fork.knife",
+                                   description: Text("state.empty.message".localized))
+        case .failed(let error):
+            ErrorStateView(error: error) {
                 Task { await viewModel.load() }
             }
         case .loaded(let meal):
@@ -103,8 +124,23 @@ struct MealDetailView: View {
 
     private func ingredients(of meal: Meal) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("detail.ingredients".localized)
-                .font(.title2.bold())
+            HStack {
+                Text("detail.ingredients".localized)
+                    .font(.title2.bold())
+                Spacer()
+                // Ajoute tous les ingrédients à la liste de courses (une seule fois)
+                Button {
+                    shopping.add(meal.ingredients)
+                    addedToShopping = true
+                } label: {
+                    Label(
+                        addedToShopping ? "detail.addedToShopping".localized : "detail.addToShopping".localized,
+                        systemImage: addedToShopping ? "checkmark" : "cart.badge.plus"
+                    )
+                    .font(.subheadline)
+                }
+                .disabled(addedToShopping)
+            }
 
             // Les ingrédients apparaissent un par un (animation décalée)
             ForEach(Array(meal.ingredients.enumerated()), id: \.element.id) { index, ingredient in
@@ -139,5 +175,7 @@ private struct TagView: View {
     NavigationStack {
         MealDetailView(meal: .preview)
             .environmentObject(FavoritesService())
+            .environmentObject(PlanningService())
+            .environmentObject(ShoppingService())
     }
 }

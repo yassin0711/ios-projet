@@ -8,6 +8,11 @@ struct HomeView: View {
             content
                 .navigationTitle("tab.home".localized)
                 .mealNavigationDestinations()
+                // Bannière publicitaire fixée en bas de l'accueil
+                .safeAreaInset(edge: .bottom) {
+                    BannerAdView()
+                        .frame(width: 320, height: 50)
+                }
         }
         .task {
             if case .idle = viewModel.state {
@@ -21,16 +26,13 @@ struct HomeView: View {
         switch viewModel.state {
         case .idle, .loading:
             LoadingStateView()
-        case .failed(let messageKey):
-            ErrorStateView(messageKey: messageKey) {
+        case .failed(let error):
+            ErrorStateView(error: error) {
                 Task { await viewModel.load() }
             }
         case .empty:
-            EmptyStateView(
-                systemImage: "fork.knife",
-                title: "state.empty.title".localized,
-                message: "state.empty.message".localized
-            )
+            ContentUnavailableView("state.empty.title".localized, systemImage: "fork.knife",
+                                   description: Text("state.empty.message".localized))
         case .loaded(let home):
             ScrollView {
                 VStack(alignment: .leading, spacing: 28) {

@@ -9,7 +9,6 @@ struct Meal: Identifiable, Hashable {
     let area: String?
     let instructions: String?
     let youtubeURL: URL?
-    let tags: [String]
     let ingredients: [Ingredient]
 
     /// Les listes (filter.php) ne renvoient que l'id, le nom et l'image :
@@ -45,9 +44,6 @@ extension Meal: Decodable {
         area = text("strArea")
         instructions = text("strInstructions")
         youtubeURL = text("strYoutube").flatMap { URL(string: $0) }
-        tags = text("strTags")?
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces) } ?? []
 
         // L'API envoie strIngredient1 ... strIngredient20 : on garde ceux qui sont remplis
         ingredients = (1...20).compactMap { index in
@@ -63,6 +59,29 @@ struct MealsResponse: Decodable {
     let meals: [Meal]?
 }
 
+// MARK: - Enregistrement dans Firestore (favoris, planning)
+
+extension Meal {
+    /// Firestore ne garde que l'essentiel : le détail complet est rechargé depuis l'API
+    var firestoreData: [String: Any] {
+        ["name": name, "thumbnail": thumbnailURL?.absoluteString ?? "", "area": area ?? ""]
+    }
+
+    init(id: String, firestoreData data: [String: Any]) {
+        let area = data["area"] as? String ?? ""
+        self.init(
+            id: id,
+            name: data["name"] as? String ?? "",
+            thumbnailURL: URL(string: data["thumbnail"] as? String ?? ""),
+            category: nil,
+            area: area.isEmpty ? nil : area,
+            instructions: nil,
+            youtubeURL: nil,
+            ingredients: []
+        )
+    }
+}
+
 // MARK: - Exemple pour les aperçus (#Preview)
 
 extension Meal {
@@ -74,7 +93,6 @@ extension Meal {
         area: "Tunisian",
         instructions: "Heat the oil in a frying pan. Add the onion, garlic and peppers...",
         youtubeURL: nil,
-        tags: ["Egg", "Breakfast"],
         ingredients: [
             Ingredient(id: 1, name: "Olive Oil", measure: "1 tbs"),
             Ingredient(id: 2, name: "Red Onion", measure: "1 chopped"),

@@ -15,10 +15,11 @@ fichier par fichier, et relie chaque notion au cours (chapitres 1 à 6).
 5. [Ce qui se passe au lancement de l'app](#5-ce-qui-se-passe-au-lancement-de-lapp)
 6. [Ce qui se passe quand on cherche « pasta »](#6-ce-qui-se-passe-quand-on-cherche--pasta-)
 7. [Changer de thème ou de langue](#7-changer-de-thème-ou-de-langue)
-8. [La connexion et les favoris (Firebase)](#8-la-connexion-et-les-favoris-firebase)
-9. [Ajouter un nouvel écran : la marche à suivre](#9-ajouter-un-nouvel-écran--la-marche-à-suivre)
-10. [Questions possibles à l'oral](#10-questions-possibles-à-loral)
-11. [Glossaire](#11-glossaire)
+8. [Firebase : connexion, favoris, planning et courses](#8-firebase--connexion-favoris-planning-et-courses)
+9. [Les publicités (Google Mobile Ads)](#9-les-publicités-google-mobile-ads)
+10. [Ajouter un nouvel écran : la marche à suivre](#10-ajouter-un-nouvel-écran--la-marche-à-suivre)
+11. [Questions possibles à l'oral](#11-questions-possibles-à-loral)
+12. [Glossaire](#12-glossaire)
 
 ---
 
@@ -33,18 +34,22 @@ l'utilisateur peut :
 - ouvrir une catégorie, puis une recette, pour voir les ingrédients et la préparation ;
 - changer le thème (clair / sombre) et la langue (français / anglais / arabe) dans les Réglages ;
 - se connecter (e-mail ou Google), créer un compte, recevoir un lien en cas de mot de passe oublié ;
-- ajouter des recettes en favoris (❤️), enregistrés dans Firestore.
+- ajouter des recettes en favoris (❤️), enregistrés dans Firestore ;
+- prévoir une recette pour un jour de la semaine (📅 planning) ;
+- ajouter les ingrédients d'une recette à sa liste de courses (🛒) et les cocher en magasin ;
+- ajouter un article à la main dans la liste de courses, grâce à un formulaire validé ;
+- voir des publicités de test : une bannière sur l'accueil, une pub plein écran toutes les 3 recettes.
 
-Le planning, la liste de courses et la communauté viendront ensuite.
 
 ```
 Splash → Présentation (1re fois) → Connexion ──→ Inscription / Mot de passe oublié
                                        │
                                        ▼ (une fois connecté)
                                     Onglets
-                                     ├── Accueil ───→ Liste d'une catégorie ───→ Détail (❤️)
+                                     ├── Accueil ───→ Liste d'une catégorie ───→ Détail (❤️ 📅 🛒)
                                      ├── Recherche ─────────────────────────────→ Détail (❤️)
                                      ├── Favoris ───────────────────────────────→ Détail (❤️)
+                                     ├── Planning ──→ Détail   ·   🛒 ──→ Liste de courses ──→ ＋ Ajouter un article
                                      └── Réglages (compte, déconnexion)
 ```
 
@@ -78,28 +83,32 @@ et le Repository ne sait rien de l'affichage.
 
 ## 3. La carte des fichiers
 
-### App/ : démarrage et structure générale
+Le projet suit l'organisation du cours (chapitre 3) : un dossier par couche. Un sous-dossier
+regroupe plusieurs écrans liés ; un écran seul reste directement dans `Views/`.
+
+```
+Matbakhi/
+├── MatbakhiApp.swift   Point d'entrée de l'app
+├── Models/       Les données, les réglages (thème, langue), les états et la validation
+├── Services/     L'accès aux données (API, Firebase) et les publicités
+├── ViewModels/   Un ViewModel par écran qui charge des données de l'API
+├── Views/        Les écrans : Auth/, Launch/, Planning/ et les autres, plus Components.swift
+└── Resources/    Traductions, icône, fichier Firebase
+```
+
+### Le point d'entrée
 
 | Fichier | Rôle | Cours |
 |---|---|---|
-| [MatbakhiApp.swift](Matbakhi/App/MatbakhiApp.swift) | Point d'entrée (`@main`). Applique le thème et la langue à toute l'app | ch. 2 |
-| [AppDelegate.swift](Matbakhi/App/AppDelegate.swift) | Démarre Firebase et les publicités au lancement | ch. 5 |
-| [RootView.swift](Matbakhi/App/RootView.swift) | Aiguillage : splash → présentation → onglets | ch. 2, 3 |
-| [MainTabView.swift](Matbakhi/App/MainTabView.swift) | Les onglets en bas de l'écran (`TabView`) | ch. 3 |
+| [MatbakhiApp.swift](Matbakhi/MatbakhiApp.swift) | Point d'entrée (`@main`). Démarre Firebase et les publicités, partage les services, applique le thème et la langue | ch. 2 |
 
-### Core/ : outils utilisés partout
+### Models/ : les données et les types communs
 
 | Fichier | Rôle | Cours |
 |---|---|---|
-| [AppSettings.swift](Matbakhi/Core/AppSettings.swift) | Enums `AppTheme` (thème) et `AppLanguage` (langue, sens de lecture) | ch. 1 |
-| [Localization.swift](Matbakhi/Core/Localization.swift) | `"clé".localized` : traduit un texte dans la langue choisie | — |
-| [LoadState.swift](Matbakhi/Core/LoadState.swift) | Les 5 états possibles d'un écran qui charge des données | ch. 1, 5 |
-| [Validation.swift](Matbakhi/Core/Validation.swift) | Règles des formulaires (nom, e-mail, mot de passe) | ch. 3 |
-
-### Models/ : les données
-
-| Fichier | Rôle | Cours |
-|---|---|---|
+| [AppSettings.swift](Matbakhi/Models/AppSettings.swift) | Enums `AppTheme` (thème) et `AppLanguage` (langue, sens de lecture), et `"clé".localized` qui traduit un texte | ch. 1 |
+| [LoadState.swift](Matbakhi/Models/LoadState.swift) | Les 5 états possibles d'un écran qui charge des données | ch. 1, 5 |
+| [Validation.swift](Matbakhi/Models/Validation.swift) | Règles des formulaires (nom, e-mail, mot de passe) | ch. 3 |
 | [Meal.swift](Matbakhi/Models/Meal.swift) | Une recette et son décodage depuis le JSON de l'API | ch. 1, 5 |
 | [MealCategory.swift](Matbakhi/Models/MealCategory.swift) | Une catégorie, et `MealListSource` (catégorie ou pays) | ch. 5 |
 
@@ -108,10 +117,13 @@ et le Repository ne sait rien de l'affichage.
 | Fichier | Rôle | Cours |
 |---|---|---|
 | [MealRepository.swift](Matbakhi/Services/MealRepository.swift) | Le protocole `MealRepository` et `TheMealDBRepository`, qui appelle l'API | ch. 5 |
-| [AuthService.swift](Matbakhi/Services/AuthService.swift) | Connexion Firebase : e-mail, Google, inscription, mot de passe oublié | ch. 5 |
+| [AuthService.swift](Matbakhi/Services/AuthService.swift) | Connexion Firebase : e-mail, Google, inscription, mot de passe oublié. Contient aussi `userCollection("...")`, la collection Firestore de l'utilisateur connecté | ch. 5 |
 | [FavoritesService.swift](Matbakhi/Services/FavoritesService.swift) | Favoris dans Cloud Firestore, mis à jour en temps réel | ch. 5 |
+| [PlanningService.swift](Matbakhi/Services/PlanningService.swift) | Planning de la semaine dans Firestore, et l'enum `WeekDay` | ch. 5 |
+| [ShoppingService.swift](Matbakhi/Services/ShoppingService.swift) | Liste de courses dans Firestore, et la struct `ShoppingItem` | ch. 5 |
+| [Ads.swift](Matbakhi/Services/Ads.swift) | Tout sur les publicités : identifiants de test, bannière, pub plein écran | — |
 
-### ViewModels/ : un par écran
+### ViewModels/ : un par écran qui charge des données
 
 | Fichier | Écran |
 |---|---|
@@ -120,31 +132,30 @@ et le Repository ne sait rien de l'affichage.
 | [MealListViewModel.swift](Matbakhi/ViewModels/MealListViewModel.swift) | Liste d'une catégorie ou d'un pays |
 | [MealDetailViewModel.swift](Matbakhi/ViewModels/MealDetailViewModel.swift) | Détail d'une recette |
 
+Les écrans Favoris, Planning et Courses n'ont pas de ViewModel : ils lisent directement le service
+Firestore partagé (`@EnvironmentObject`), qui joue déjà ce rôle.
+
 ### Views/ : les écrans
 
 | Fichier | Rôle |
 |---|---|
+| [RootView.swift](Matbakhi/Views/RootView.swift) | Aiguillage : splash → présentation → connexion → onglets |
+| [MainTabView.swift](Matbakhi/Views/MainTabView.swift) | Les onglets (`TabView`) et la navigation commune à tous les onglets |
 | [Launch/SplashView.swift](Matbakhi/Views/Launch/SplashView.swift) | Animation de lancement |
 | [Launch/OnboardingView.swift](Matbakhi/Views/Launch/OnboardingView.swift) | Présentation en 3 pages |
 | [Auth/LoginView.swift](Matbakhi/Views/Auth/LoginView.swift) | Connexion (e-mail et Google) |
 | [Auth/SignUpView.swift](Matbakhi/Views/Auth/SignUpView.swift) | Inscription |
 | [Auth/ForgotPasswordView.swift](Matbakhi/Views/Auth/ForgotPasswordView.swift) | Mot de passe oublié |
-| [Home/HomeView.swift](Matbakhi/Views/Home/HomeView.swift) | Accueil |
-| [Search/SearchView.swift](Matbakhi/Views/Search/SearchView.swift) | Recherche |
-| [MealList/MealListView.swift](Matbakhi/Views/MealList/MealListView.swift) | Grille de recettes |
-| [Detail/MealDetailView.swift](Matbakhi/Views/Detail/MealDetailView.swift) | Détail d'une recette + bouton ❤️ |
-| [Favorites/FavoritesView.swift](Matbakhi/Views/Favorites/FavoritesView.swift) | Mes favoris |
-| [Settings/SettingsView.swift](Matbakhi/Views/Settings/SettingsView.swift) | Réglages : compte, thème, langue |
-
-### Views/Components/ : morceaux réutilisables
-
-| Fichier | Rôle |
-|---|---|
-| [StateViews.swift](Matbakhi/Views/Components/StateViews.swift) | Vues « chargement », « erreur » et « vide » |
-| [RemoteImage.swift](Matbakhi/Views/Components/RemoteImage.swift) | Image téléchargée avec apparition en fondu |
-| [MealCard.swift](Matbakhi/Views/Components/MealCard.swift) | Carte d'une recette + animation au toucher |
-| [NavigationDestinations.swift](Matbakhi/Views/Components/NavigationDestinations.swift) | Où mène un clic sur une recette ou une catégorie |
-| [FormField.swift](Matbakhi/Views/Components/FormField.swift) | Champ de formulaire avec son message d'erreur |
+| [HomeView.swift](Matbakhi/Views/HomeView.swift) | Accueil (+ bannière publicitaire) |
+| [SearchView.swift](Matbakhi/Views/SearchView.swift) | Recherche |
+| [MealListView.swift](Matbakhi/Views/MealListView.swift) | Recettes d'une catégorie ou d'un pays |
+| [MealDetailView.swift](Matbakhi/Views/MealDetailView.swift) | Détail d'une recette + boutons ❤️, planning et courses |
+| [FavoritesView.swift](Matbakhi/Views/FavoritesView.swift) | Mes favoris |
+| [Planning/PlanningView.swift](Matbakhi/Views/Planning/PlanningView.swift) | Planning de la semaine |
+| [Planning/ShoppingListView.swift](Matbakhi/Views/Planning/ShoppingListView.swift) | Liste de courses (cocher, supprimer), ouverte depuis le planning |
+| [Planning/AddItemView.swift](Matbakhi/Views/Planning/AddItemView.swift) | Formulaire « Ajouter un article », affiché dans une feuille |
+| [SettingsView.swift](Matbakhi/Views/SettingsView.swift) | Réglages : compte, thème, langue |
+| [Components.swift](Matbakhi/Views/Components.swift) | Petites vues réutilisables : chargement, erreur, grille et carte de recette, image, champ de formulaire |
 
 ### Le reste
 
@@ -201,7 +212,7 @@ Le projet n'utilise **jamais** le `!` (force unwrap) : il fait planter l'app si 
 
 ### 4.4 Les enums (chapitre 1)
 
-**Enum simple**, dans [AppSettings.swift](Matbakhi/Core/AppSettings.swift) :
+**Enum simple**, dans [AppSettings.swift](Matbakhi/Models/AppSettings.swift) :
 
 ```swift
 enum AppTheme: String, CaseIterable, Identifiable {
@@ -214,7 +225,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
 - `CaseIterable` donne `AppTheme.allCases`, la liste de tous les cas, utilisée pour remplir le menu
   des Réglages.
 
-**Enum avec valeurs associées**, dans [LoadState.swift](Matbakhi/Core/LoadState.swift). C'est
+**Enum avec valeurs associées**, dans [LoadState.swift](Matbakhi/Models/LoadState.swift). C'est
 la pièce la plus importante du projet :
 
 ```swift
@@ -223,7 +234,7 @@ enum LoadState<Value> {
     case loading         // chargement en cours
     case loaded(Value)   // succès : contient les données
     case empty           // succès, mais rien à afficher
-    case failed(String)  // échec : contient la clé du message d'erreur
+    case failed(Error)   // échec : contient l'erreur
 }
 ```
 
@@ -231,11 +242,11 @@ Chaque vue fait un `switch` sur cet état :
 
 ```swift
 switch viewModel.state {
-case .idle:                     EmptyStateView(...)        // message d'aide
-case .loading:                  LoadingStateView()         // indicateur de chargement
-case .loaded(let meals):        /* grille de recettes */
-case .empty:                    EmptyStateView(...)        // « Aucun résultat »
-case .failed(let messageKey):   ErrorStateView(messageKey: messageKey) { ... }
+case .idle:               ContentUnavailableView(...)   // message d'aide
+case .loading:            LoadingStateView()            // indicateur de chargement
+case .loaded(let meals):  MealGrid(meals: meals)        // grille de recettes
+case .empty:              ContentUnavailableView(...)   // « Aucun résultat »
+case .failed(let error):  ErrorStateView(error: error) { ... }
 }
 ```
 
@@ -276,7 +287,7 @@ Une extension ajoute des fonctionnalités à un type qui existe déjà, même un
 
 ```swift
 extension String {
-    var localized: String { L10n.string(self) }
+    var localized: String { ... }   // voir AppSettings.swift
 }
 ```
 
@@ -342,23 +353,23 @@ la transformer en message :
 do {
     let meals = try await repository.searchMeals(query: text)
     state = meals.isEmpty ? .empty : .loaded(meals)
-} catch is CancellationError {
-    state = .idle       // écran quitté pendant le chargement : on rechargera au retour
 } catch {
-    state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
+    // Écran quitté pendant le chargement (tâche annulée) : on rechargera au retour
+    state = Task.isCancelled ? .idle : .failed(error)
 }
 ```
 
 - `condition ? a : b` est l'opérateur ternaire : `a` si la condition est vraie, sinon `b`.
-- `(error as? NetworkError)?.messageKey ?? "error.unknown"` signifie : si c'est une `NetworkError`,
-  prendre son message (ex. : `"error.network.offline"`), sinon le message « erreur inattendue ».
+- Quand on quitte un écran pendant le chargement, SwiftUI **annule** sa tâche (`Task.isCancelled`).
+  Ce n'est pas une vraie erreur : on remet l'état à `.idle` pour que le chargement reprenne au retour.
 - Les erreurs possibles sont listées dans l'enum `NetworkError` : `invalidURL`, `noConnection`,
-  `server` et `decoding`.
-- `CancellationError` n'est pas une vraie erreur : SwiftUI annule le chargement quand on quitte
-  l'écran. On remet l'état à `.idle` pour que le chargement reprenne au retour.
+  `server` et `decoding`. Chacune a un `messageKey`, la clé de son message traduit.
+- `ErrorStateView` transforme l'erreur en message : `(error as? NetworkError)?.messageKey ?? "error.unknown"`
+  veut dire « si c'est une `NetworkError`, son message ; sinon, le message *erreur inattendue* ».
 - Le Repository vérifie aussi le **code de statut HTTP** : 200 = succès, 404 ou 500 = erreur.
-- Le projet n'utilise pas `try?` pour les appels réseau : il ferait disparaître l'erreur, et on ne
-  pourrait plus afficher de message (c'était une erreur du cours, chapitre 5).
+- Dans le Repository, chaque `try?` est suivi d'un `throw` précis
+  (`guard let ... = try? ... else { throw NetworkError.noConnection }`) : l'erreur n'est jamais
+  perdue, elle devient un message clair.
 
 ### 4.10 `Codable` : du JSON vers Swift (chapitre 5)
 
@@ -372,7 +383,6 @@ enum CodingKeys: String, CodingKey {
     case id = "idCategory"
     case name = "strCategory"
     case thumbnailURL = "strCategoryThumb"
-    case summary = "strCategoryDescription"
 }
 ```
 
@@ -401,7 +411,7 @@ ingredients = [Ingredient(id: 1, name: "soy sauce", measure: "3/4 cup"),
 | `@State` | Vue | Petite donnée locale à la vue | `@State private var showSplash = true` |
 | `@StateObject` | Vue | La vue **crée** et garde un ViewModel | `@StateObject private var viewModel = HomeViewModel()` |
 | `@ObservedObject` | Vue | La vue **reçoit** un ViewModel créé ailleurs | (pas encore utilisé) |
-| `@EnvironmentObject` | Vue | Objet **partagé** par toute l'app, injecté une seule fois | `AuthService`, `FavoritesService` |
+| `@EnvironmentObject` | Vue | Objet **partagé** par toute l'app, injecté une seule fois | `AuthService`, `FavoritesService`, `PlanningService` |
 | `@Published` | ViewModel | La vue se redessine quand la valeur change | `@Published private(set) var state` |
 | `@AppStorage` | Vue | Valeur sauvegardée sur le téléphone, qui survit à la fermeture | Thème, langue, présentation déjà vue |
 | `@SceneStorage` | Vue | Mémorise l'onglet sélectionné | `MainTabView` |
@@ -420,20 +430,20 @@ Deux points importants :
 ## 5. Ce qui se passe au lancement de l'app
 
 1. iOS lance `MatbakhiApp`, la struct marquée `@main`. Son `init()` configure Firebase, si le
-   fichier `GoogleService-Info.plist` est présent.
-2. `AppDelegate` démarre le SDK des publicités.
-3. `MatbakhiApp` crée `AuthService` et `FavoritesService`, les partage avec `.environmentObject(...)`,
+   fichier `GoogleService-Info.plist` est présent, et démarre le SDK des publicités.
+2. `MatbakhiApp` crée les services partagés (`AuthService`, `FavoritesService`, `PlanningService`,
+   `ShoppingService`), les partage avec `.environmentObject(...)`,
    et affiche `RootView` en lui appliquant le thème (`.preferredColorScheme`), la langue
    (`.environment(\.locale, ...)`) et le sens de lecture (`.environment(\.layoutDirection, ...)`).
-4. `RootView` commence par `SplashView`, car `showSplash` vaut `true`. Le `.task` du splash lance
+3. `RootView` commence par `SplashView`, car `showSplash` vaut `true`. Le `.task` du splash lance
    l'animation (le logo tourne et grossit), attend 1,6 seconde puis appelle `onFinish`.
-5. `onFinish` met `showSplash` à `false`. SwiftUI recalcule `RootView` :
+4. `onFinish` met `showSplash` à `false`. SwiftUI recalcule `RootView` :
    - si la présentation n'a jamais été vue, il affiche `OnboardingView` ;
    - sinon, si personne n'est connecté, il affiche `LoginView` ;
    - sinon, il affiche `MainTabView`.
-6. Dans la présentation, « Commencer » met `onboardingDone` à `true`. Grâce à `@AppStorage`,
+5. Dans la présentation, « Commencer » met `onboardingDone` à `true`. Grâce à `@AppStorage`,
    c'est sauvegardé : aux lancements suivants, la présentation ne revient pas.
-7. `MainTabView` affiche `HomeView`, dont le `.task` appelle `viewModel.load()`. L'indicateur de
+6. `MainTabView` affiche `HomeView`, dont le `.task` appelle `viewModel.load()`. L'indicateur de
    chargement s'affiche, puis le contenu.
 
 ---
@@ -454,15 +464,14 @@ Deux points importants :
    - il vérifie que le code HTTP vaut 200 (succès) ;
    - il décode le JSON en `MealsResponse` et renvoie `response.meals ?? []`.
 6. **Le ViewModel met à jour l'état** : `.loaded(meals)`, `.empty` s'il n'y a aucun résultat, ou
-   `.failed("error.network.offline")` sans Internet.
+   `.failed(NetworkError.noConnection)` sans Internet.
 7. **La vue se redessine** et affiche, selon l'état :
    - la grille de cartes ;
    - « Aucune recette ne correspond à votre recherche » ;
    - le message d'erreur avec un bouton « Réessayer ».
 8. **L'utilisateur touche une carte.** `NavigationLink(value: meal)` demande au `NavigationStack`
-   d'afficher la destination prévue pour un `Meal`, définie dans
-   [NavigationDestinations.swift](Matbakhi/Views/Components/NavigationDestinations.swift) :
-   c'est `MealDetailView`.
+   d'afficher la destination prévue pour un `Meal`, définie par `mealNavigationDestinations()` dans
+   [MainTabView.swift](Matbakhi/Views/MainTabView.swift) : c'est `MealDetailView`.
    - Une recette issue de la recherche est complète : elle s'affiche tout de suite.
    - Une recette venant d'une catégorie est partielle (nom et image seulement) :
      `MealDetailViewModel` charge d'abord le détail avec `lookup.php`.
@@ -499,7 +508,7 @@ Deux points importants :
 
 ---
 
-## 8. La connexion et les favoris (Firebase)
+## 8. Firebase : connexion, favoris, planning et courses
 
 ### Qui fait quoi
 
@@ -507,10 +516,12 @@ Deux points importants :
 |---|---|
 | `AuthService` | Toutes les opérations de connexion : se connecter, créer un compte, mot de passe oublié, Google, se déconnecter |
 | `FavoritesService` | Lire, ajouter et retirer des favoris dans Firestore |
+| `PlanningService` | Lire, prévoir et retirer les recettes de la semaine |
+| `ShoppingService` | Lire, ajouter, cocher et supprimer les articles de la liste de courses |
 | `Validation` | Vérifier les champs des formulaires **avant** d'appeler Firebase |
 | `FormField` | Un champ de saisie avec son message d'erreur en rouge |
 
-Les deux services sont créés **une seule fois**, dans `MatbakhiApp` (`@StateObject`), puis partagés
+Ces services sont créés **une seule fois**, dans `MatbakhiApp` (`@StateObject`), puis partagés
 avec toutes les vues grâce à `.environmentObject(...)`. Une vue les récupère avec
 `@EnvironmentObject` (chapitre 3) :
 
@@ -561,14 +572,28 @@ il suffit que Firebase change `user`. Sans le fichier `GoogleService-Info.plist`
 4. `.onOpenURL`, dans `MatbakhiApp`, gère le retour dans l'app. Il faut pour cela ajouter
    `REVERSED_CLIENT_ID` dans les *URL Types* de l'onglet Info d'Xcode (voir README).
 
-### Les favoris dans Firestore
+### Les données dans Firestore
 
 ```
-users/{uid}                         { name, email }            ← profil, créé à l'inscription
-users/{uid}/favorites/{idRecette}   { name, thumbnail, area }  ← un document par favori
+users/{uid}                         { name, email }                    ← profil, créé à l'inscription
+users/{uid}/favorites/{idRecette}   { name, thumbnail, area }          ← un document par favori
+users/{uid}/planning/{jour}         { mealId, name, thumbnail, area }  ← jour = monday … sunday
+users/{uid}/shopping/{idArticle}    { name, measure, done }            ← un document par ingrédient
 ```
+
+Les trois services suivent **le même modèle** : `startListening()` écoute la collection, et de
+petites fonctions écrivent dedans. `userCollection("favorites")` donne la collection de
+l'utilisateur connecté (ou `nil` si personne n'est connecté).
 
 - Toucher ❤️ appelle `FavoritesService.toggle(meal)`, qui crée ou supprime le document.
+- Le menu 📅 du détail appelle `PlanningService.plan(meal, on: day)`. Le jour sert d'identifiant du
+  document : prévoir une autre recette le même jour **remplace** l'ancienne (`setData`).
+- « Ajouter aux courses » appelle `ShoppingService.add(ingredients)` : un document par ingrédient,
+  avec un identifiant automatique (`addDocument`). Cocher un article appelle
+  `updateData(["done": ...])`, qui ne modifie que ce champ.
+- Le formulaire « Ajouter un article » ([AddItemView.swift](Matbakhi/Views/Planning/AddItemView.swift))
+  suit le même modèle que la connexion : `showErrors` → `Validation.name` → `guard` → puis
+  `ShoppingService.addItem(...)` et `dismiss()`, qui ferme la feuille.
 - `addSnapshotListener` **écoute** la collection : à chaque changement, même depuis un autre
   téléphone, `favorites` est mis à jour. L'écran Favoris et le cœur se redessinent tout seuls.
 - **Sécurité** : les règles de [firestore.rules](firestore.rules) n'autorisent chaque utilisateur
@@ -576,41 +601,61 @@ users/{uid}/favorites/{idRecette}   { name, thumbnail, area }  ← un document p
 
 ---
 
-## 9. Ajouter un nouvel écran : la marche à suivre
+## 9. Les publicités (Google Mobile Ads)
 
-Exemple : l'écran « Favoris ». Suivez toujours le même ordre.
+Le sujet impose une bannière et une interstitielle, **avec les identifiants de test fournis par
+Google**. Tout est dans un seul fichier : [Ads.swift](Matbakhi/Services/Ads.swift). Les pubs
+affichées portent la mention « Test Ad ».
 
-1. **Model** (si nouvelles données) dans `Models/`, par exemple `struct FavoriteMeal: Identifiable, Codable`.
+| Type | Où | Fichier |
+|---|---|---|
+| Bannière (320 × 50) | En bas de l'accueil | `BannerAdView` |
+| Interstitielle (plein écran) | Toutes les 3 recettes ouvertes | `InterstitialAdService` |
+
+- `MatbakhiApp` démarre le SDK une seule fois, au lancement (`MobileAds.shared.start`).
+- `BannerView` est une vue **UIKit**. `UIViewRepresentable` permet de l'afficher dans SwiftUI :
+  `makeUIView` crée la bannière et lance son chargement (`load(Request())`).
+- Le `.task` du détail appelle `InterstitialAdService.shared.mealOpened()`. Ce service compte les
+  recettes ouvertes : à la 3e, la 6e…, il affiche la pub déjà chargée, puis en charge une nouvelle à
+  l'avance. Une interstitielle ne peut s'afficher **qu'une seule fois**.
+- L'identifiant **d'application** de test (`GADApplicationIdentifier`) se règle dans l'onglet Info
+  d'Xcode (voir README) : sans lui, l'app plante au lancement.
+
+---
+
+## 10. Ajouter un nouvel écran : la marche à suivre
+
+Exemple : imaginons un nouvel écran « Communauté » (recettes publiées). Suivez toujours le même ordre.
+
+1. **Model** (si nouvelles données) dans `Models/`, par exemple `struct Recipe: Identifiable`.
 2. **Repository** dans `Services/` : un protocole, plus une implémentation (Firestore).
 3. **ViewModel** dans `ViewModels/`, sur ce modèle :
 
    ```swift
    @MainActor
-   final class FavoritesViewModel: ObservableObject {
-       @Published private(set) var state: LoadState<[FavoriteMeal]> = .idle
-       private let repository: FavoritesRepository
+   final class CommunityViewModel: ObservableObject {
+       @Published private(set) var state: LoadState<[Recipe]> = .idle
+       private let repository: RecipeRepository
 
-       init(repository: FavoritesRepository = FirestoreFavoritesRepository()) {
+       init(repository: RecipeRepository = FirestoreRecipeRepository()) {
            self.repository = repository
        }
 
        func load() async {
            state = .loading
            do {
-               let favorites = try await repository.favorites()
-               state = favorites.isEmpty ? .empty : .loaded(favorites)
-           } catch is CancellationError {
-               state = .idle
+               let recipes = try await repository.recipes()
+               state = recipes.isEmpty ? .empty : .loaded(recipes)
            } catch {
-               state = .failed((error as? NetworkError)?.messageKey ?? "error.unknown")
+               state = Task.isCancelled ? .idle : .failed(error)
            }
        }
    }
    ```
 
-4. **Vue** dans `Views/Favorites/` : `@StateObject private var viewModel = FavoritesViewModel()`,
-   puis un `switch viewModel.state` qui traite les 5 cas, en réutilisant `LoadingStateView`,
-   `ErrorStateView` et `EmptyStateView`.
+4. **Vue** dans `Views/` : `@StateObject private var viewModel = CommunityViewModel()`, puis un
+   `switch viewModel.state` qui traite les 5 cas, avec `LoadingStateView`, `ErrorStateView` et
+   `ContentUnavailableView`.
 5. **Navigation** : ajoutez un onglet dans `MainTabView`, ou un `NavigationLink`.
 6. **Textes** : ajoutez les clés dans les 3 fichiers `Localizable.strings`.
 7. **Sur le Mac**, récupérez le code (`git pull`) puis lancez l'app (⌘R) pour vérifier.
@@ -618,7 +663,7 @@ Exemple : l'écran « Favoris ». Suivez toujours le même ordre.
 
 ---
 
-## 10. Questions possibles à l'oral
+## 11. Questions possibles à l'oral
 
 **Pourquoi l'architecture MVVM ?**
 Chaque fichier a un seul rôle : la vue affiche, le ViewModel gère la logique, le Repository va
@@ -662,6 +707,11 @@ est valide. Les erreurs renvoyées par Firebase sont aussi traduites en messages
 Chaque favori est un document Firestore dans `users/{uid}/favorites`. `addSnapshotListener` prévient
 l'app à chaque changement, en temps réel.
 
+**Pourquoi des identifiants de test pour les publicités ?**
+Le sujet l'exige, et Google l'impose pendant le développement : cliquer sur ses propres vraies pubs
+peut faire bloquer le compte AdMob. Les pubs de test s'affichent normalement, avec la mention
+« Test Ad ».
+
 **Comment protégez-vous les données des utilisateurs ?**
 Avec les règles de sécurité Firestore : un utilisateur connecté ne peut lire et écrire que ses
 propres documents (`request.auth.uid == userId`).
@@ -677,7 +727,7 @@ Pour l'arabe, la mise en page est inversée avec `layoutDirection`.
 
 ---
 
-## 11. Glossaire
+## 12. Glossaire
 
 | Terme | Signification |
 |---|---|
@@ -692,6 +742,8 @@ Pour l'arabe, la mise en page est inversée avec `layoutDirection`.
 | **RTL** | *Right-to-left* : écriture de droite à gauche, comme l'arabe |
 | **UserDefaults** | Petit espace de stockage du téléphone pour les réglages (utilisé par `@AppStorage`) |
 | **SDK** | Bibliothèque fournie par une entreprise (Firebase, Google Mobile Ads) |
+| **Interstitielle** | Publicité plein écran, affichée entre deux écrans |
+| **UIViewRepresentable** | Protocole qui permet d'afficher une vue UIKit dans SwiftUI |
 | **Firebase Authentication** | Service de Google qui gère les comptes (inscription, connexion) |
 | **Cloud Firestore** | Base de données de Firebase, organisée en collections et documents |
 | **Listener (écouteur)** | Code appelé automatiquement à chaque changement (connexion, données Firestore) |

@@ -1,6 +1,6 @@
 /* Application */
 "app.name" = "Matbakhi";
-"app.tagline" = "Cuisiner, planifier, partager";
+"app.tagline" = "Cuisiner, planifier, savourer";
 
 /* Onglets */
 "tab.home" = "Accueil";
@@ -12,8 +12,8 @@
 "onboarding.1.text" = "Explorez les cuisines du monde et les saveurs de Tunisie.";
 "onboarding.2.title" = "Planifiez vos repas";
 "onboarding.2.text" = "Organisez votre semaine et générez votre liste de courses.";
-"onboarding.3.title" = "Partagez vos créations";
-"onboarding.3.text" = "Publiez vos propres recettes pour la communauté.";
+"onboarding.3.title" = "Gardez vos recettes préférées";
+"onboarding.3.text" = "Ajoutez vos recettes en favoris et retrouvez-les sur tous vos appareils.";
 "onboarding.next" = "Suivant";
 "onboarding.start" = "Commencer";
 "onboarding.skip" = "Passer";
@@ -101,3 +101,33 @@
 /* Favoris */
 "favorites.empty.title" = "Aucun favori";
 "favorites.empty.message" = "Touchez le cœur sur une recette pour la retrouver ici.";
+
+/* Planning */
+"tab.planning" = "Planning";
+"day.monday" = "Lundi";
+"day.tuesday" = "Mardi";
+"day.wednesday" = "Mercredi";
+"day.thursday" = "Jeudi";
+"day.friday" = "Vendredi";
+"day.saturday" = "Samedi";
+"day.sunday" = "Dimanche";
+"planning.empty.title" = "Semaine vide";
+"planning.empty.message" = "Ouvrez une recette puis touchez le calendrier pour la prévoir un jour de la semaine.";
+"planning.noMeal" = "Aucun repas prévu";
+"planning.remove" = "Retirer";
+"detail.planOn" = "Prévoir pour…";
+
+/* Liste de courses */
+"detail.addToShopping" = "Ajouter aux courses";
+"detail.addedToShopping" = "Ajouté aux courses";
+"shopping.title" = "Liste de courses";
+"shopping.empty.title" = "Liste vide";
+"shopping.empty.message" = "Touchez + pour ajouter un article, ou « Ajouter aux courses » sur une recette pour ajouter ses ingrédients.";
+"shopping.clearDone" = "Effacer les achetés";
+
+/* Formulaire « Ajouter un article » */
+"shopping.add" = "Ajouter un article";
+"shopping.item.name" = "Nom de l'article";
+"shopping.item.quantity" = "Quantité (ex. 500 g)";
+"shopping.item.add" = "Ajouter";
+"common.cancel" = "Annuler";
