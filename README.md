@@ -69,7 +69,8 @@ View (SwiftUI)  →  ViewModel (ObservableObject, @Published)  →  Repository (
 
 ```
 Matbakhi/
-├── Matbakhi.xcodeproj       Projet Xcode (à créer une fois sur le Mac, voir « Mise en place »)
+├── Matbakhi.xcodeproj       Projet Xcode prêt à l'emploi (SDK, réglages)
+├── Info.plist               Identifiant de test des pubs, retour de la connexion Google
 ├── Matbakhi/
 │   ├── MatbakhiApp.swift    Point d'entrée (@main)
 │   ├── Models/              Meal, MealCategory, thème et langue, LoadState, Validation
@@ -131,72 +132,38 @@ Le code est sur https://github.com/yassin0711/ios-projet. **Repassez-le en priv�
 Sans ce fichier, l'app se lance directement sur l'accueil, sans écran de connexion (pratique pour
 travailler sur les autres écrans).
 
-### 3. Créer le projet Xcode (une seule fois, sur le Mac de l'école)
+### 3. Lancer l'app sur le Mac (Xcode 16 ou plus récent)
 
-Le dépôt contient le code (dossier `Matbakhi/`) mais pas encore de projet Xcode. Un membre le crée
-une fois, puis l'envoie sur GitHub pour toute l'équipe.
+Le projet Xcode est **déjà prêt** dans le dépôt : SDK aux bonnes versions (Firebase 11,
+Google Sign-In 8, Google Mobile Ads 12), identifiant de test des pubs, retour de la connexion
+Google, bundle `com.matbakhi.app`, iOS 17. Il n'y a **aucun réglage** à faire.
 
-**a. Créer un projet vide**
-
-1. Récupérer le code : `git clone https://github.com/yassin0711/ios-projet.git`
-2. Copier `GoogleService-Info.plist` dans `ios-projet/Matbakhi/Resources/`.
-3. Xcode → **File → New → Project…** → iOS → **App** → Next.
-4. Product Name : `Matbakhi` · Organization Identifier : `com.matbakhi` · Interface : **SwiftUI** ·
-   Language : **Swift** · Testing System : **None** · Storage : **None**.
-5. Enregistrer dans un dossier **temporaire** (par exemple le Bureau), **pas** dans le dépôt.
-6. Fermer Xcode. Déplacer **uniquement** `Matbakhi.xcodeproj` du dossier temporaire vers
-   `ios-projet/`, à côté du dossier `Matbakhi/`. Supprimer le dossier temporaire.
-7. Ouvrir `ios-projet/Matbakhi.xcodeproj`.
-   - **Xcode 16 ou plus récent** : le dossier `Matbakhi` du code apparaît tout seul, avec tous les fichiers.
-   - **Xcode 15** : supprimer les fichiers en rouge (clic droit → Delete → *Remove Reference*), puis
-     clic droit sur le groupe `Matbakhi` → **Add Files to "Matbakhi"…** → sélectionner
-     `MatbakhiApp.swift` et les dossiers `Models`, `Services`, `ViewModels`, `Views`, `Resources`
-     → cible `Matbakhi` cochée → Add.
-
-**b. Ajouter les SDK** (File → **Add Package Dependencies…**, une ligne à la fois)
-
-| Adresse à coller | Version (« Up to Next Major ») | Produits à cocher |
-|---|---|---|
-| `https://github.com/firebase/firebase-ios-sdk` | 11.0.0 | FirebaseAuth, FirebaseFirestore |
-| `https://github.com/google/GoogleSignIn-iOS` | 8.0.0 | GoogleSignIn |
-| `https://github.com/googleads/swift-package-manager-google-mobile-ads` | 12.0.0 | GoogleMobileAds |
-
-Ces versions sont celles avec lesquelles le code a été compilé et testé.
-
-**c. Régler la cible** (clic sur le projet bleu → cible **Matbakhi**)
-
-| Onglet | Réglage | Valeur |
-|---|---|---|
-| General | Bundle Identifier | `com.matbakhi.app` |
-| General | Minimum Deployments | iOS **17.0** |
-| Info | Custom iOS Target Properties → **+** → `GADApplicationIdentifier` (String) | `ca-app-pub-3940256099942544~1458002511` (identifiant de **test** Google : sans lui, l'app plante au lancement) |
-| Info | URL Types → **+** → URL Schemes | la valeur de `REVERSED_CLIENT_ID` dans `GoogleService-Info.plist` (pour la connexion Google) |
-| Build Settings | Other Linker Flags | `-ObjC` |
-| Build Settings | Swift Language Version | **Swift 5** |
-| Build Settings | Default Actor Isolation (si le réglage existe) | **nonisolated** |
-| Build Settings | Strict Concurrency Checking | **Minimal** |
-
-Si la compilation affiche une erreur sur **Development Assets** (dossier « Preview Content »
-introuvable) : Build Settings → chercher « Development Assets » → effacer la valeur.
-
-**d. Lancer et partager**
-
-1. Choisir un simulateur iPhone en haut de la fenêtre, puis **⌘R**.
-2. Si tout fonctionne, envoyer le projet Xcode pour l'équipe :
+1. Dans le Terminal :
    ```bash
-   git add Matbakhi.xcodeproj
-   git commit -m "Ajout du projet Xcode"
-   git push
+   cd ~/Desktop
+   rm -rf ios-projet          # seulement si un ancien dossier existe
+   git clone https://github.com/yassin0711/ios-projet.git
    ```
-3. Les autres membres font `git pull`, copient `GoogleService-Info.plist`, et ouvrent `Matbakhi.xcodeproj`.
+2. Copier `GoogleService-Info.plist` dans `ios-projet/Matbakhi/Resources/` (clé USB, e-mail…).
+3. Double-cliquer sur `ios-projet/Matbakhi.xcodeproj`, attendre la fin du téléchargement des SDK
+   (barre en haut, quelques minutes), choisir un simulateur iPhone, puis **⌘R**.
 
-Avec Xcode 16 ou plus récent, les fichiers ajoutés plus tard dans `Matbakhi/` apparaissent tout seuls.
-Avec Xcode 15, il faut les ajouter avec **Add Files to "Matbakhi"…**.
+Les fichiers ajoutés plus tard dans `Matbakhi/` apparaissent tout seuls dans Xcode.
+
+**En cas d'erreur de paquets** (« could not be resolved ») : File → Packages → **Reset Package
+Caches**. Si ça ne suffit pas, quitter Xcode puis :
+```bash
+rm -rf ~/Library/Developer/Xcode/DerivedData/Matbakhi-* ~/Library/Caches/org.swift.swiftpm
+```
+
+**Vérification automatique** : à chaque `git push`, un Mac de GitHub compile l'app avec Xcode 16.2
+(onglet *Actions* du dépôt). Une coche verte signifie que le code compile.
 
 ## Prochaines étapes
 
 1. ~~Authentification : Connexion, Inscription, Mot de passe oublié, Google Sign-In.~~ ✅
 2. ~~Firestore : profil, favoris, planning, liste de courses, formulaire « Ajouter un article ».~~ ✅
 3. ~~Publicités : bannière sur l'accueil, interstitielle après quelques recettes consultées.~~ ✅
-4. Créer le projet Xcode sur le Mac de l'école, puis tout tester (voir « Mise en place »).
-5. Bonus facultatif : vérifier en mode avion que favoris, planning et courses restent visibles.
+4. ~~Projet Xcode prêt à l'emploi, compilé avec succès sur GitHub (Xcode 16.2).~~ ✅
+5. Tester l'app sur le Mac de l'école (voir « Mise en place », étape 3).
+6. Bonus facultatif : vérifier en mode avion que favoris, planning et courses restent visibles.

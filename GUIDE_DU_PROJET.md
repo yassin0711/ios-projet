@@ -163,7 +163,9 @@ Firestore partagé (`@EnvironmentObject`), qui joue déjà ce rôle.
 |---|---|
 | `Resources/fr.lproj`, `en.lproj`, `ar.lproj` | Les textes traduits (`Localizable.strings`) |
 | `Resources/Assets.xcassets` | Icône de l'app et couleur principale (orange) |
-| `Matbakhi.xcodeproj` | Projet Xcode, à créer une fois sur le Mac (voir README) |
+| `Matbakhi.xcodeproj` | Projet Xcode prêt à l'emploi : SDK et réglages déjà faits |
+| `Info.plist` | Identifiant de test des pubs et retour de la connexion Google |
+| `.github/workflows/build.yml` | Compilation automatique sur un Mac de GitHub à chaque `git push` |
 | [firestore.rules](firestore.rules) | Règles de sécurité Firestore, à publier dans la console Firebase |
 
 ---
@@ -658,8 +660,8 @@ Exemple : imaginons un nouvel écran « Communauté » (recettes publiées). Sui
    `ContentUnavailableView`.
 5. **Navigation** : ajoutez un onglet dans `MainTabView`, ou un `NavigationLink`.
 6. **Textes** : ajoutez les clés dans les 3 fichiers `Localizable.strings`.
-7. **Sur le Mac**, récupérez le code (`git pull`) puis lancez l'app (⌘R) pour vérifier.
-   Avec Xcode 15, ajoutez d'abord les nouveaux fichiers (Add Files to "Matbakhi"…).
+7. **Envoyez le code** (`git push`) : la coche verte de l'onglet *Actions* sur GitHub confirme
+   qu'il compile. Puis, sur le Mac, `git pull` et ⌘R pour le tester.
 
 ---
 

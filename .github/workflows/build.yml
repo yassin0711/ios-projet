@@ -51,4 +51,11 @@ jobs:
           info=$(plutil -p "$APP/Info.plist" | grep -E "CFBundleIdentifier|GADApplicationIdentifier|googleusercontent|MinimumOSVersion|CFBundleDisplayName")
           echo "::notice title=Info.plist::$(printf '%s\n' "$info" | awk 'BEGIN{ORS="%0A"} {print}')"
           echo "::notice title=Contenu de l'app::$(ls "$APP" | tr '\n' ' ') | fr: $(ls "$APP/fr.lproj" 2>/dev/null | tr '\n' ' ')"
-          echo "::notice title=Package.resolved::$(base64 < Matbakhi.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved | tr -d '\n')"
+          # Versions exactes des SDK, en morceaux (les annotations GitHub sont limitées en taille)
+          b64=$(base64 < Matbakhi.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved | tr -d '\n')
+          n=0
+          while [ -n "$b64" ]; do
+            n=$((n + 1))
+            echo "::notice title=Package.resolved $n::${b64:0:3000}"
+            b64=${b64:3000}
+          done
